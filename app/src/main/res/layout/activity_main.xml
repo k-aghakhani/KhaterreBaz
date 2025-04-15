@@ -1,19 +1,116 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:background="@color/cream"
+    android:padding="16dp">
 
+    <!-- Header -->
     <TextView
+        android:id="@+id/tv_app_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="KhaterreBaz"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:text="خاطره‌باز"
+        android:textColor="@color/persian_red"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Memory Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_memory"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        app:layout_constraintTop_toBottomOf="@id/tv_app_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.9"
+        android:layout_marginTop="24dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Memory Image -->
+            <ImageView
+                android:id="@+id/iv_memory"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:scaleType="centerCrop"
+                android:src="@android:drawable/ic_menu_gallery"
+                android:contentDescription="تصویر خاطره" />
+
+            <!-- Memory Text -->
+            <TextView
+                android:id="@+id/tv_memory_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="یادتونه با گچ تو کوچه خط می‌کشیدیم برای لی‌لی؟"
+                android:textColor="@color/dark_gray"
+                android:textSize="16sp"
+                android:layout_marginTop="12dp" />
+
+            <!-- Memory Description -->
+            <TextView
+                android:id="@+id/tv_memory_desc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="اون موقع فکر می‌کردیم اگه یه روز لی‌لی بازی نکنیم، دنیا تمومه!"
+                android:textColor="@color/dark_gray"
+                android:textSize="14sp"
+                android:layout_marginTop="8dp" />
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Another Memory Button -->
+    <Button
+        android:id="@+id/btn_another_memory"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="یه خاطره دیگه"
+        android:backgroundTint="@color/turquoise"
+        android:textColor="@android:color/white"
+        app:layout_constraintTop_toBottomOf="@id/card_memory"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.9"
+        android:layout_marginTop="16dp" />
+
+    <!-- Write Memory Button -->
+    <Button
+        android:id="@+id/btn_write_memory"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="خاطره‌تو بنویس"
+        android:backgroundTint="@color/persian_red"
+        android:textColor="@android:color/white"
+        app:layout_constraintTop_toBottomOf="@id/btn_another_memory"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.9"
+        android:layout_marginTop="8dp" />
+
+    <!-- Decades Button -->
+    <Button
+        android:id="@+id/btn_decades"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="سفر به دهه‌ها"
+        android:backgroundTint="@color/nostalgic_brown"
+        android:textColor="@android:color/white"
+        app:layout_constraintTop_toBottomOf="@id/btn_write_memory"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.9"
+        android:layout_marginTop="8dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
