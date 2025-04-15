@@ -3,6 +3,11 @@
     <style name="Base.Theme.KhaterreBaz" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/persian_red</item>
+        <item name="colorPrimaryVariant">@color/nostalgic_brown</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="android:statusBarColor">@color/nostalgic_brown</item>
+        <item name="android:windowBackground">@color/cream</item>
     </style>
 
     <style name="Theme.KhaterreBaz" parent="Base.Theme.KhaterreBaz" />

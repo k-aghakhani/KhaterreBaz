@@ -2,4 +2,9 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="persian_red">#C84C44</color>
+    <color name="turquoise">#40C4B2</color>
+    <color name="nostalgic_brown">#8B572A</color>
+    <color name="cream">#FFF8E1</color>
+    <color name="dark_gray">#4A4A4A</color>
 </resources>
