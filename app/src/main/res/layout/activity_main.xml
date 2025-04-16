@@ -9,7 +9,6 @@
 
     <!-- Header -->
     <TextView
-        android:layout_marginTop="50dp"
         android:id="@+id/tv_app_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -69,6 +68,130 @@
                 android:textSize="14sp"
                 android:layout_marginTop="8dp" />
 
+            <!-- Like/Dislike/Comment Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="12dp"
+                android:gravity="center_vertical">
+
+                <!-- Like Button -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:id="@+id/iv_like"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_like"
+                        android:contentDescription="لایک" />
+
+                    <TextView
+                        android:id="@+id/tv_like_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textColor="@color/dark_gray"
+                        android:textSize="14sp"
+                        android:layout_marginStart="4dp" />
+                </LinearLayout>
+
+                <!-- Dislike Button -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:id="@+id/iv_dislike"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_dislike"
+                        android:contentDescription="دیس‌لایک" />
+
+                    <TextView
+                        android:id="@+id/tv_dislike_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textColor="@color/dark_gray"
+                        android:textSize="14sp"
+                        android:layout_marginStart="4dp" />
+                </LinearLayout>
+
+                <!-- Comment Button -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:id="@+id/iv_comment"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_comment"
+                        android:contentDescription="کامنت" />
+
+                    <TextView
+                        android:id="@+id/tv_comment_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textColor="@color/dark_gray"
+                        android:textSize="14sp"
+                        android:layout_marginStart="4dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Comment Input Section (Hidden by Default) -->
+            <LinearLayout
+                android:id="@+id/ll_comment_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:layout_marginTop="12dp">
+
+                <EditText
+                    android:id="@+id/et_comment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="نظرتو بنویس..."
+                    android:backgroundTint="@color/turquoise"
+                    android:textColor="@color/dark_gray"
+                    android:textSize="14sp"
+                    android:padding="8dp" />
+
+                <Button
+                    android:id="@+id/btn_submit_comment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ثبت"
+                    android:backgroundTint="@color/turquoise"
+                    android:textColor="@android:color/white"
+                    android:layout_gravity="end"
+                    android:layout_marginTop="8dp" />
+
+                <!-- Comments List -->
+                <TextView
+                    android:id="@+id/tv_comments_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="@color/dark_gray"
+                    android:textSize="14sp"
+                    android:layout_marginTop="8dp" />
+            </LinearLayout>
+
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
@@ -95,20 +218,6 @@
         android:backgroundTint="@color/persian_red"
         android:textColor="@android:color/white"
         app:layout_constraintTop_toBottomOf="@id/btn_another_memory"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="0.9"
-        android:layout_marginTop="8dp" />
-
-    <!-- Decades Button -->
-    <Button
-        android:id="@+id/btn_decades"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="سفر به دهه‌ها"
-        android:backgroundTint="@color/nostalgic_brown"
-        android:textColor="@android:color/white"
-        app:layout_constraintTop_toBottomOf="@id/btn_write_memory"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintWidth_percent="0.9"
