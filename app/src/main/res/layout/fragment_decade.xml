@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/cream">
+
+    <!-- Decade Memory Image -->
+    <ImageView
+        android:id="@+id/iv_decade_memory"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:src="@android:drawable/ic_menu_gallery"
+        android:contentDescription="تصویر خاطره دهه" />
+
+    <!-- Decade Memory Text -->
+    <TextView
+        android:id="@+id/tv_decade_memory_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="خاطره نمونه از دهه ..."
+        android:textColor="@color/dark_gray"
+        android:textSize="16sp"
+        android:layout_marginTop="12dp" />
+
+    <!-- Decade Memory Description -->
+    <TextView
+        android:id="@+id/tv_decade_memory_desc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="توضیحات کوتاه درباره خاطره ..."
+        android:textColor="@color/dark_gray"
+        android:textSize="14sp"
+        android:layout_marginTop="8dp" />
+
+</LinearLayout>
