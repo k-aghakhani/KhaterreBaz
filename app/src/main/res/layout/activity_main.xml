@@ -9,6 +9,7 @@
 
     <!-- Header -->
     <TextView
+        android:layout_marginTop="50dp"
         android:id="@+id/tv_app_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -45,7 +46,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="150dp"
                 android:scaleType="centerCrop"
-                android:src="@android:drawable/ic_menu_gallery"
+                android:src="@drawable/sample_memory"
                 android:contentDescription="تصویر خاطره" />
 
             <!-- Memory Text -->
