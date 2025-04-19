@@ -197,19 +197,41 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Another Memory Button -->
-    <Button
-        android:id="@+id/btn_another_memory"
+    <!-- Navigation Buttons (Previous and Next Memory) -->
+    <LinearLayout
+        android:id="@+id/ll_navigation_buttons"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="یه خاطره دیگه"
-        android:backgroundTint="@color/turquoise"
-        android:textColor="@android:color/white"
+        android:orientation="horizontal"
+        android:gravity="center"
         app:layout_constraintTop_toBottomOf="@id/card_memory"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintWidth_percent="0.9"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="16dp">
+
+
+
+        <Button
+            android:id="@+id/btn_another_memory"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:layout_marginEnd="4dp"
+            android:text="یه خاطره دیگه"
+            android:backgroundTint="@color/turquoise"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/btn_previous_memory"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="4dp"
+            android:text="خاطره قبلی"
+            android:backgroundTint="@color/turquoise"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
 
     <!-- Write Memory Button -->
     <Button
@@ -219,7 +241,7 @@
         android:text="خاطره‌تو بنویس"
         android:backgroundTint="@color/persian_red"
         android:textColor="@android:color/white"
-        app:layout_constraintTop_toBottomOf="@id/btn_another_memory"
+        app:layout_constraintTop_toBottomOf="@id/ll_navigation_buttons"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintWidth_percent="0.9"

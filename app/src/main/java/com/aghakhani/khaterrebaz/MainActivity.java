@@ -20,6 +20,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -38,7 +39,14 @@ public class MainActivity extends AppCompatActivity {
 
     private RequestQueue queue;
     private int currentMemoryId;
-    private ImageView ivMemoryImage; // Added for image loading
+    private ImageView ivMemoryImage;
+    private TextView tvMemoryText;
+    private TextView tvMemoryDesc;
+    private TextView tvLikeCount;
+    private TextView tvDislikeCount;
+    private TextView tvCommentCount;
+    private TextView tvCommentsList;
+    private Button btnPreviousMemory; // Added for previous memory button
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,30 +54,44 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // Initialize views
+        btnPreviousMemory = findViewById(R.id.btn_previous_memory); // Initialize previous memory button
         Button btnAnotherMemory = findViewById(R.id.btn_another_memory);
         Button btnWriteMemory = findViewById(R.id.btn_write_memory);
         ImageView ivLike = findViewById(R.id.iv_like);
-        TextView tvLikeCount = findViewById(R.id.tv_like_count);
+        tvLikeCount = findViewById(R.id.tv_like_count);
         ImageView ivDislike = findViewById(R.id.iv_dislike);
-        TextView tvDislikeCount = findViewById(R.id.tv_dislike_count);
+        tvDislikeCount = findViewById(R.id.tv_dislike_count);
         ImageView ivComment = findViewById(R.id.iv_comment);
-        TextView tvCommentCount = findViewById(R.id.tv_comment_count);
+        tvCommentCount = findViewById(R.id.tv_comment_count);
         LinearLayout llCommentInput = findViewById(R.id.ll_comment_input);
         EditText etComment = findViewById(R.id.et_comment);
         Button btnSubmitComment = findViewById(R.id.btn_submit_comment);
-        TextView tvCommentsList = findViewById(R.id.tv_comments_list);
-        TextView tvMemoryText = findViewById(R.id.tv_memory_text);
-        TextView tvMemoryDesc = findViewById(R.id.tv_memory_desc);
-        ivMemoryImage = findViewById(R.id.iv_memory_image); // Initialize ImageView
+        tvCommentsList = findViewById(R.id.tv_comments_list);
+        tvMemoryText = findViewById(R.id.tv_memory_text);
+        tvMemoryDesc = findViewById(R.id.tv_memory_desc);
+        ivMemoryImage = findViewById(R.id.iv_memory_image);
 
         // Initialize Volley
         queue = Volley.newRequestQueue(this);
 
-        // Load initial memory
-        loadMemory(tvMemoryText, tvMemoryDesc, tvLikeCount, tvDislikeCount, tvCommentCount, tvCommentsList);
+        // Enable Picasso logging
+        Picasso.get().setLoggingEnabled(true);
 
-        // Another Memory button click
-        btnAnotherMemory.setOnClickListener(v -> loadMemory(tvMemoryText, tvMemoryDesc, tvLikeCount, tvDislikeCount, tvCommentCount, tvCommentsList));
+        // Load initial memory (first memory)
+        currentMemoryId = 0; // Start with 0 to load the first memory
+        loadMemory("next");
+
+        // Previous Memory button click
+        btnPreviousMemory.setOnClickListener(v -> {
+            if (currentMemoryId > 1) { // Only allow if not on the first memory
+                loadMemory("prev");
+            } else {
+                Toast.makeText(MainActivity.this, "این اولین خاطره است!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Next Memory button click (previously "Another Memory")
+        btnAnotherMemory.setOnClickListener(v -> loadMemory("next"));
 
         // Write Memory button click
         btnWriteMemory.setOnClickListener(v -> Toast.makeText(MainActivity.this, "به زودی می‌تونی خاطره بنویسی!", Toast.LENGTH_SHORT).show());
@@ -84,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
         ivComment.setOnClickListener(v -> {
             llCommentInput.setVisibility(llCommentInput.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
             if (llCommentInput.getVisibility() == View.VISIBLE) {
-                loadComments(tvCommentsList);
+                loadComments();
             }
         });
 
@@ -92,16 +114,16 @@ public class MainActivity extends AppCompatActivity {
         btnSubmitComment.setOnClickListener(v -> {
             String comment = etComment.getText().toString().trim();
             if (!comment.isEmpty()) {
-                addComment(comment, tvCommentCount, tvCommentsList, etComment, llCommentInput);
+                addComment(comment, etComment, llCommentInput);
             } else {
                 Toast.makeText(MainActivity.this, "لطفاً کامنت بنویسید!", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void loadMemory(TextView tvMemoryText, TextView tvMemoryDesc, TextView tvLikeCount,
-                            TextView tvDislikeCount, TextView tvCommentCount, TextView tvCommentsList) {
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, API_URL + "?action=get_memory", null,
+    private void loadMemory(String direction) {
+        String url = API_URL + "?action=get_memory&current_id=" + currentMemoryId + "&direction=" + direction;
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
                 response -> {
                     try {
                         if (response.getString("status").equals("success")) {
@@ -115,18 +137,35 @@ public class MainActivity extends AppCompatActivity {
 
                             // Load image using Picasso
                             String imageUrl = data.optString("image_url", "");
+                            Log.d(TAG, "Loading image from URL: " + imageUrl);
                             if (!imageUrl.isEmpty()) {
                                 Picasso.get()
                                         .load(imageUrl)
-                                        .placeholder(R.drawable.sample_memory) // Placeholder image while loading
-                                        .error(R.drawable.sample_memory) // Fallback image if loading fails
-                                        .into(ivMemoryImage);
+                                        .placeholder(R.drawable.sample_memory)
+                                        .error(R.drawable.sample_memory)
+                                        .into(ivMemoryImage, new Callback() {
+                                            @Override
+                                            public void onSuccess() {
+                                                Log.d(TAG, "Image loaded successfully: " + imageUrl);
+                                            }
+
+                                            @Override
+                                            public void onError(Exception e) {
+                                                Log.e(TAG, "Failed to load image: " + e.getMessage(), e);
+                                                Toast.makeText(MainActivity.this, "خطا در لود تصویر: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                                ivMemoryImage.setImageResource(R.drawable.sample_memory);
+                                            }
+                                        });
                             } else {
-                                ivMemoryImage.setImageResource(R.drawable.sample_memory); // Fallback if no image URL
+                                Log.w(TAG, "Image URL is empty");
+                                ivMemoryImage.setImageResource(R.drawable.sample_memory);
                             }
 
-                            loadComments(tvCommentsList);
+                            loadComments();
                             Log.d(TAG, "Memory loaded: " + data.toString());
+
+                            // Update button states
+                            btnPreviousMemory.setEnabled(currentMemoryId > 1);
                         } else {
                             Toast.makeText(MainActivity.this, "Error: " + response.getString("message"), Toast.LENGTH_SHORT).show();
                             Log.e(TAG, "Server error: " + response.toString());
@@ -154,14 +193,12 @@ public class MainActivity extends AppCompatActivity {
     private void addLikeDislike(int isLike, TextView tvLikeCount, TextView tvDislikeCount) {
         StringRequest request = new StringRequest(Request.Method.POST, API_URL,
                 response -> {
-                    Log.d(TAG, "Raw response: " + response); // Log the raw response
+                    Log.d(TAG, "Raw response: " + response);
                     try {
-                        // Check if response is a valid JSON
                         if (response.trim().startsWith("{") || response.trim().startsWith("[")) {
                             JSONObject jsonResponse = new JSONObject(response);
                             if (jsonResponse.getString("status").equals("success")) {
-                                loadMemory(findViewById(R.id.tv_memory_text), findViewById(R.id.tv_memory_desc),
-                                        tvLikeCount, tvDislikeCount, findViewById(R.id.tv_comment_count), findViewById(R.id.tv_comments_list));
+                                loadMemory("stay"); // Reload the same memory
                                 Toast.makeText(MainActivity.this, isLike == 1 ? "لایک شد!" : "دیس‌لایک شد!", Toast.LENGTH_SHORT).show();
                                 Log.d(TAG, "Like/Dislike success: " + response);
                             } else {
@@ -193,7 +230,6 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        // Set timeout and retry policy
         request.setRetryPolicy(new DefaultRetryPolicy(
                 TIMEOUT_MS,
                 MAX_RETRIES,
@@ -203,17 +239,15 @@ public class MainActivity extends AppCompatActivity {
         queue.add(request);
     }
 
-    private void addComment(String comment, TextView tvCommentCount, TextView tvCommentsList, EditText etComment, LinearLayout llCommentInput) {
+    private void addComment(String comment, EditText etComment, LinearLayout llCommentInput) {
         StringRequest request = new StringRequest(Request.Method.POST, API_URL,
                 response -> {
-                    Log.d(TAG, "Raw response: " + response); // Log the raw response
+                    Log.d(TAG, "Raw response: " + response);
                     try {
-                        // Check if response is a valid JSON
                         if (response.trim().startsWith("{") || response.trim().startsWith("[")) {
                             JSONObject jsonResponse = new JSONObject(response);
                             if (jsonResponse.getString("status").equals("success")) {
-                                loadMemory(findViewById(R.id.tv_memory_text), findViewById(R.id.tv_memory_desc),
-                                        findViewById(R.id.tv_like_count), findViewById(R.id.tv_dislike_count), tvCommentCount, tvCommentsList);
+                                loadMemory("stay"); // Reload the same memory
                                 etComment.setText("");
                                 llCommentInput.setVisibility(View.GONE);
                                 Toast.makeText(MainActivity.this, "کامنت ثبت شد!", Toast.LENGTH_SHORT).show();
@@ -247,7 +281,6 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        // Set timeout and retry policy
         request.setRetryPolicy(new DefaultRetryPolicy(
                 TIMEOUT_MS,
                 MAX_RETRIES,
@@ -257,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
         queue.add(request);
     }
 
-    private void loadComments(TextView tvCommentsList) {
+    private void loadComments() {
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, API_URL + "?action=get_comments&memory_id=" + currentMemoryId, null,
                 response -> {
                     try {
@@ -284,7 +317,6 @@ public class MainActivity extends AppCompatActivity {
                     Log.e(TAG, "Network error: " + error.toString(), error);
                 });
 
-        // Set timeout and retry policy
         request.setRetryPolicy(new DefaultRetryPolicy(
                 TIMEOUT_MS,
                 MAX_RETRIES,
