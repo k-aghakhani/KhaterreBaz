@@ -11,12 +11,26 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class MainActivity extends AppCompatActivity {
 
-    private int likeCount = 0;
-    private int dislikeCount = 0;
-    private int commentCount = 0;
-    private StringBuilder comments = new StringBuilder();
+    private static final String API_URL = "http://192.168.1.86/khaterrebaz/api.php"; // Replace with your server IP
+    private static final int USER_ID = 1; // Temporary user ID (replace with real user system later)
+
+    private RequestQueue queue;
+    private int currentMemoryId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,70 +50,149 @@ public class MainActivity extends AppCompatActivity {
         EditText etComment = findViewById(R.id.et_comment);
         Button btnSubmitComment = findViewById(R.id.btn_submit_comment);
         TextView tvCommentsList = findViewById(R.id.tv_comments_list);
+        TextView tvMemoryText = findViewById(R.id.tv_memory_text);
+        TextView tvMemoryDesc = findViewById(R.id.tv_memory_desc);
+
+        // Initialize Volley
+        queue = Volley.newRequestQueue(this);
+
+        // Load initial memory
+        loadMemory(tvMemoryText, tvMemoryDesc, tvLikeCount, tvDislikeCount, tvCommentCount, tvCommentsList);
 
         // Another Memory button click
-        btnAnotherMemory.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "خاطره جدید بارگذاری شد!", Toast.LENGTH_SHORT).show();
-                // اینجا می‌تونی منطق عوض کردن خاطره رو اضافه کنی
-            }
-        });
+        btnAnotherMemory.setOnClickListener(v -> loadMemory(tvMemoryText, tvMemoryDesc, tvLikeCount, tvDislikeCount, tvCommentCount, tvCommentsList));
 
         // Write Memory button click
-        btnWriteMemory.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "به زودی می‌تونی خاطره بنویسی!", Toast.LENGTH_SHORT).show();
-                // اینجا می‌تونی به صفحه نوشتن خاطره بری
-            }
-        });
+        btnWriteMemory.setOnClickListener(v -> Toast.makeText(MainActivity.this, "به زودی می‌تونی خاطره بنویسی!", Toast.LENGTH_SHORT).show());
 
         // Like button click
-        ivLike.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                likeCount++;
-                tvLikeCount.setText(String.valueOf(likeCount));
-                Toast.makeText(MainActivity.this, "لایک شد!", Toast.LENGTH_SHORT).show();
-            }
-        });
+        ivLike.setOnClickListener(v -> addLikeDislike(1, tvLikeCount, tvDislikeCount));
 
         // Dislike button click
-        ivDislike.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dislikeCount++;
-                tvDislikeCount.setText(String.valueOf(dislikeCount));
-                Toast.makeText(MainActivity.this, "دیس‌لایک شد!", Toast.LENGTH_SHORT).show();
-            }
-        });
+        ivDislike.setOnClickListener(v -> addLikeDislike(0, tvLikeCount, tvDislikeCount));
 
         // Comment button click
-        ivComment.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                llCommentInput.setVisibility(llCommentInput.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+        ivComment.setOnClickListener(v -> {
+            llCommentInput.setVisibility(llCommentInput.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+            if (llCommentInput.getVisibility() == View.VISIBLE) {
+                loadComments(tvCommentsList);
             }
         });
 
         // Submit comment button click
-        btnSubmitComment.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String comment = etComment.getText().toString().trim();
-                if (!comment.isEmpty()) {
-                    commentCount++;
-                    comments.append("کاربر: ").append(comment).append("\n");
-                    tvCommentCount.setText(String.valueOf(commentCount));
-                    tvCommentsList.setText(comments.toString());
-                    etComment.setText("");
-                    llCommentInput.setVisibility(View.GONE);
-                    Toast.makeText(MainActivity.this, "کامنت ثبت شد!", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(MainActivity.this, "لطفاً کامنت بنویسید!", Toast.LENGTH_SHORT).show();
-                }
+        btnSubmitComment.setOnClickListener(v -> {
+            String comment = etComment.getText().toString().trim();
+            if (!comment.isEmpty()) {
+                addComment(comment, tvCommentCount, tvCommentsList, etComment, llCommentInput);
+            } else {
+                Toast.makeText(MainActivity.this, "لطفاً کامنت بنویسید!", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void loadMemory(TextView tvMemoryText, TextView tvMemoryDesc, TextView tvLikeCount,
+                            TextView tvDislikeCount, TextView tvCommentCount, TextView tvCommentsList) {
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, API_URL + "?action=get_memory", null,
+                response -> {
+                    try {
+                        if (response.getString("status").equals("success")) {
+                            JSONObject data = response.getJSONObject("data");
+                            currentMemoryId = data.getInt("id");
+                            tvMemoryText.setText(data.getString("title"));
+                            tvMemoryDesc.setText(data.getString("description"));
+                            tvLikeCount.setText(String.valueOf(data.getInt("like_count")));
+                            tvDislikeCount.setText(String.valueOf(data.getInt("dislike_count")));
+                            tvCommentCount.setText(String.valueOf(data.getInt("comment_count")));
+                            loadComments(tvCommentsList);
+                        } else {
+                            Toast.makeText(MainActivity.this, "Error: " + response.getString("message"), Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(MainActivity.this, "Error parsing response", Toast.LENGTH_SHORT).show();
+                    }
+                },
+                error -> Toast.makeText(MainActivity.this, "Network error", Toast.LENGTH_SHORT).show());
+
+        queue.add(request);
+    }
+
+    private void addLikeDislike(int isLike, TextView tvLikeCount, TextView tvDislikeCount) {
+        Map<String, String> params = new HashMap<>();
+        params.put("action", "add_like");
+        params.put("user_id", String.valueOf(USER_ID));
+        params.put("memory_id", String.valueOf(currentMemoryId));
+        params.put("is_like", String.valueOf(isLike));
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, API_URL, new JSONObject(params),
+                response -> {
+                    try {
+                        if (response.getString("status").equals("success")) {
+                            // Reload memory to update counts
+                            loadMemory(findViewById(R.id.tv_memory_text), findViewById(R.id.tv_memory_desc),
+                                    tvLikeCount, tvDislikeCount, findViewById(R.id.tv_comment_count), findViewById(R.id.tv_comments_list));
+                            Toast.makeText(MainActivity.this, isLike == 1 ? "لایک شد!" : "دیس‌لایک شد!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(MainActivity.this, "Error: " + response.getString("message"), Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(MainActivity.this, "Error parsing response", Toast.LENGTH_SHORT).show();
+                    }
+                },
+                error -> Toast.makeText(MainActivity.this, "Network error", Toast.LENGTH_SHORT).show());
+
+        queue.add(request);
+    }
+
+    private void addComment(String comment, TextView tvCommentCount, TextView tvCommentsList, EditText etComment, LinearLayout llCommentInput) {
+        Map<String, String> params = new HashMap<>();
+        params.put("action", "add_comment");
+        params.put("user_id", String.valueOf(USER_ID));
+        params.put("memory_id", String.valueOf(currentMemoryId));
+        params.put("comment_text", comment);
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, API_URL, new JSONObject(params),
+                response -> {
+                    try {
+                        if (response.getString("status").equals("success")) {
+                            // Reload memory to update comment count
+                            loadMemory(findViewById(R.id.tv_memory_text), findViewById(R.id.tv_memory_desc),
+                                    findViewById(R.id.tv_like_count), findViewById(R.id.tv_dislike_count), tvCommentCount, tvCommentsList);
+                            etComment.setText("");
+                            llCommentInput.setVisibility(View.GONE);
+                            Toast.makeText(MainActivity.this, "کامنت ثبت شد!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(MainActivity.this, "Error: " + response.getString("message"), Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(MainActivity.this, "Error parsing response", Toast.LENGTH_SHORT).show();
+                    }
+                },
+                error -> Toast.makeText(MainActivity.this, "Network error", Toast.LENGTH_SHORT).show());
+
+        queue.add(request);
+    }
+
+    private void loadComments(TextView tvCommentsList) {
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, API_URL + "?action=get_comments&memory_id=" + currentMemoryId, null,
+                response -> {
+                    try {
+                        if (response.getString("status").equals("success")) {
+                            JSONArray comments = response.getJSONArray("data");
+                            StringBuilder commentText = new StringBuilder();
+                            for (int i = 0; i < comments.length(); i++) {
+                                JSONObject comment = comments.getJSONObject(i);
+                                commentText.append("کاربر: ").append(comment.getString("comment_text")).append("\n");
+                            }
+                            tvCommentsList.setText(commentText.toString());
+                        } else {
+                            Toast.makeText(MainActivity.this, "Error: " + response.getString("message"), Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(MainActivity.this, "Error parsing response", Toast.LENGTH_SHORT).show();
+                    }
+                },
+                error -> Toast.makeText(MainActivity.this, "Network error", Toast.LENGTH_SHORT).show());
+
+        queue.add(request);
     }
 }
