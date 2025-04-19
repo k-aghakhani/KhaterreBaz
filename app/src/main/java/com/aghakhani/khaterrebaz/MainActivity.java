@@ -20,6 +20,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -37,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
     private RequestQueue queue;
     private int currentMemoryId;
+    private ImageView ivMemoryImage; // Added for image loading
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
         TextView tvCommentsList = findViewById(R.id.tv_comments_list);
         TextView tvMemoryText = findViewById(R.id.tv_memory_text);
         TextView tvMemoryDesc = findViewById(R.id.tv_memory_desc);
+        ivMemoryImage = findViewById(R.id.iv_memory_image); // Initialize ImageView
 
         // Initialize Volley
         queue = Volley.newRequestQueue(this);
@@ -109,6 +112,19 @@ public class MainActivity extends AppCompatActivity {
                             tvLikeCount.setText(String.valueOf(data.getInt("like_count")));
                             tvDislikeCount.setText(String.valueOf(data.getInt("dislike_count")));
                             tvCommentCount.setText(String.valueOf(data.getInt("comment_count")));
+
+                            // Load image using Picasso
+                            String imageUrl = data.optString("image_url", "");
+                            if (!imageUrl.isEmpty()) {
+                                Picasso.get()
+                                        .load(imageUrl)
+                                        .placeholder(R.drawable.sample_memory) // Placeholder image while loading
+                                        .error(R.drawable.sample_memory) // Fallback image if loading fails
+                                        .into(ivMemoryImage);
+                            } else {
+                                ivMemoryImage.setImageResource(R.drawable.sample_memory); // Fallback if no image URL
+                            }
+
                             loadComments(tvCommentsList);
                             Log.d(TAG, "Memory loaded: " + data.toString());
                         } else {

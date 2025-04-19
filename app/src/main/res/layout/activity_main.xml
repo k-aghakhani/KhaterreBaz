@@ -41,12 +41,14 @@
 
             <!-- Memory Image -->
             <ImageView
-                android:id="@+id/iv_memory"
+                android:id="@+id/iv_memory_image"
                 android:layout_width="match_parent"
-                android:layout_height="150dp"
+                android:layout_height="200dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/sample_memory"
-                android:contentDescription="تصویر خاطره" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
             <!-- Memory Text -->
             <TextView
