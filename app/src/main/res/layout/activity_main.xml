@@ -210,8 +210,6 @@
         app:layout_constraintWidth_percent="0.9"
         android:layout_marginTop="16dp">
 
-
-
         <Button
             android:id="@+id/btn_another_memory"
             android:layout_width="0dp"

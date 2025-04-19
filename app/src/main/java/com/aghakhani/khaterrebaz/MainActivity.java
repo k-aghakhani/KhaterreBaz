@@ -1,5 +1,6 @@
 package com.aghakhani.khaterrebaz;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -167,8 +168,22 @@ public class MainActivity extends AppCompatActivity {
                             // Update button states
                             btnPreviousMemory.setEnabled(currentMemoryId > 1);
                         } else {
-                            Toast.makeText(MainActivity.this, "Error: " + response.getString("message"), Toast.LENGTH_SHORT).show();
-                            Log.e(TAG, "Server error: " + response.toString());
+                            // Handle "No memories found" case
+                            if (response.getString("message").equals("No memories found")) {
+                                new AlertDialog.Builder(MainActivity.this)
+                                        .setTitle("پایان خاطره‌ها")
+                                        .setMessage("خاطره جدیدی وجود نداره، لطفاً بعداً سر بزن! می‌خوای از اول شروع کنی؟")
+                                        .setPositiveButton("بله، از اول", (dialog, which) -> {
+                                            currentMemoryId = 0; // Reset to load the first memory
+                                            loadMemory("next");
+                                        })
+                                        .setNegativeButton("خیر", null)
+                                        .setCancelable(true)
+                                        .show();
+                            } else {
+                                Toast.makeText(MainActivity.this, "Error: " + response.getString("message"), Toast.LENGTH_SHORT).show();
+                                Log.e(TAG, "Server error: " + response.toString());
+                            }
                         }
                     } catch (Exception e) {
                         Toast.makeText(MainActivity.this, "Error parsing response: " + e.getMessage(), Toast.LENGTH_LONG).show();
