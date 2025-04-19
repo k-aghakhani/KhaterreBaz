@@ -1,6 +1,7 @@
 package com.aghakhani.khaterrebaz;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -11,11 +12,13 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
@@ -27,7 +30,10 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
 
     private static final String API_URL = "http://192.168.1.86/khaterrebaz/api.php"; // Replace with your server IP
-    private static final int USER_ID = 1; // Temporary user ID (replace with real user system later)
+    private static final int USER_ID = 1; // Temporary user ID
+    private static final String TAG = "KhaterreBaz";
+    private static final int TIMEOUT_MS = 15000; // 15 seconds timeout
+    private static final int MAX_RETRIES = 3; // Retry 3 times
 
     private RequestQueue queue;
     private int currentMemoryId;
@@ -104,70 +110,119 @@ public class MainActivity extends AppCompatActivity {
                             tvDislikeCount.setText(String.valueOf(data.getInt("dislike_count")));
                             tvCommentCount.setText(String.valueOf(data.getInt("comment_count")));
                             loadComments(tvCommentsList);
+                            Log.d(TAG, "Memory loaded: " + data.toString());
                         } else {
                             Toast.makeText(MainActivity.this, "Error: " + response.getString("message"), Toast.LENGTH_SHORT).show();
+                            Log.e(TAG, "Server error: " + response.toString());
                         }
                     } catch (Exception e) {
-                        Toast.makeText(MainActivity.this, "Error parsing response", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Error parsing response: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Parse error: " + e.getMessage(), e);
                     }
                 },
-                error -> Toast.makeText(MainActivity.this, "Network error", Toast.LENGTH_SHORT).show());
+                error -> {
+                    Toast.makeText(MainActivity.this, "Network error: " + error.toString(), Toast.LENGTH_LONG).show();
+                    Log.e(TAG, "Network error: " + error.toString(), error);
+                });
+
+        // Set timeout and retry policy
+        request.setRetryPolicy(new DefaultRetryPolicy(
+                TIMEOUT_MS,
+                MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        ));
 
         queue.add(request);
     }
 
     private void addLikeDislike(int isLike, TextView tvLikeCount, TextView tvDislikeCount) {
-        Map<String, String> params = new HashMap<>();
-        params.put("action", "add_like");
-        params.put("user_id", String.valueOf(USER_ID));
-        params.put("memory_id", String.valueOf(currentMemoryId));
-        params.put("is_like", String.valueOf(isLike));
-
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, API_URL, new JSONObject(params),
+        StringRequest request = new StringRequest(Request.Method.POST, API_URL,
                 response -> {
                     try {
-                        if (response.getString("status").equals("success")) {
-                            // Reload memory to update counts
+                        JSONObject jsonResponse = new JSONObject(response);
+                        if (jsonResponse.getString("status").equals("success")) {
                             loadMemory(findViewById(R.id.tv_memory_text), findViewById(R.id.tv_memory_desc),
                                     tvLikeCount, tvDislikeCount, findViewById(R.id.tv_comment_count), findViewById(R.id.tv_comments_list));
                             Toast.makeText(MainActivity.this, isLike == 1 ? "لایک شد!" : "دیس‌لایک شد!", Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "Like/Dislike success: " + response);
                         } else {
-                            Toast.makeText(MainActivity.this, "Error: " + response.getString("message"), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, "Error: " + jsonResponse.getString("message"), Toast.LENGTH_SHORT).show();
+                            Log.e(TAG, "Server error: " + jsonResponse.toString());
                         }
                     } catch (Exception e) {
-                        Toast.makeText(MainActivity.this, "Error parsing response", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Error parsing response: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Parse error: " + e.getMessage(), e);
                     }
                 },
-                error -> Toast.makeText(MainActivity.this, "Network error", Toast.LENGTH_SHORT).show());
+                error -> {
+                    Toast.makeText(MainActivity.this, "Network error: " + error.toString(), Toast.LENGTH_LONG).show();
+                    Log.e(TAG, "Network error: " + error.toString(), error);
+                }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("action", "add_like");
+                params.put("user_id", String.valueOf(USER_ID));
+                params.put("memory_id", String.valueOf(currentMemoryId));
+                params.put("is_like", String.valueOf(isLike));
+                Log.d(TAG, "Sending params: " + params.toString());
+                return params;
+            }
+        };
+
+        // Set timeout and retry policy
+        request.setRetryPolicy(new DefaultRetryPolicy(
+                TIMEOUT_MS,
+                MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        ));
 
         queue.add(request);
     }
 
     private void addComment(String comment, TextView tvCommentCount, TextView tvCommentsList, EditText etComment, LinearLayout llCommentInput) {
-        Map<String, String> params = new HashMap<>();
-        params.put("action", "add_comment");
-        params.put("user_id", String.valueOf(USER_ID));
-        params.put("memory_id", String.valueOf(currentMemoryId));
-        params.put("comment_text", comment);
-
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, API_URL, new JSONObject(params),
+        StringRequest request = new StringRequest(Request.Method.POST, API_URL,
                 response -> {
                     try {
-                        if (response.getString("status").equals("success")) {
-                            // Reload memory to update comment count
+                        JSONObject jsonResponse = new JSONObject(response);
+                        if (jsonResponse.getString("status").equals("success")) {
                             loadMemory(findViewById(R.id.tv_memory_text), findViewById(R.id.tv_memory_desc),
                                     findViewById(R.id.tv_like_count), findViewById(R.id.tv_dislike_count), tvCommentCount, tvCommentsList);
                             etComment.setText("");
                             llCommentInput.setVisibility(View.GONE);
                             Toast.makeText(MainActivity.this, "کامنت ثبت شد!", Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "Comment success: " + response);
                         } else {
-                            Toast.makeText(MainActivity.this, "Error: " + response.getString("message"), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, "Error: " + jsonResponse.getString("message"), Toast.LENGTH_SHORT).show();
+                            Log.e(TAG, "Server error: " + jsonResponse.toString());
                         }
                     } catch (Exception e) {
-                        Toast.makeText(MainActivity.this, "Error parsing response", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Error parsing response: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Parse error: " + e.getMessage(), e);
                     }
                 },
-                error -> Toast.makeText(MainActivity.this, "Network error", Toast.LENGTH_SHORT).show());
+                error -> {
+                    Toast.makeText(MainActivity.this, "Network error: " + error.toString(), Toast.LENGTH_LONG).show();
+                    Log.e(TAG, "Network error: " + error.toString(), error);
+                }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("action", "add_comment");
+                params.put("user_id", String.valueOf(USER_ID));
+                params.put("memory_id", String.valueOf(currentMemoryId));
+                params.put("comment_text", comment);
+                Log.d(TAG, "Sending params: " + params.toString());
+                return params;
+            }
+        };
+
+        // Set timeout and retry policy
+        request.setRetryPolicy(new DefaultRetryPolicy(
+                TIMEOUT_MS,
+                MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        ));
 
         queue.add(request);
     }
@@ -184,14 +239,27 @@ public class MainActivity extends AppCompatActivity {
                                 commentText.append("کاربر: ").append(comment.getString("comment_text")).append("\n");
                             }
                             tvCommentsList.setText(commentText.toString());
+                            Log.d(TAG, "Comments loaded: " + response.toString());
                         } else {
                             Toast.makeText(MainActivity.this, "Error: " + response.getString("message"), Toast.LENGTH_SHORT).show();
+                            Log.e(TAG, "Server error: " + response.toString());
                         }
                     } catch (Exception e) {
-                        Toast.makeText(MainActivity.this, "Error parsing response", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Error parsing response: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Parse error: " + e.getMessage(), e);
                     }
                 },
-                error -> Toast.makeText(MainActivity.this, "Network error", Toast.LENGTH_SHORT).show());
+                error -> {
+                    Toast.makeText(MainActivity.this, "Network error: " + error.toString(), Toast.LENGTH_LONG).show();
+                    Log.e(TAG, "Network error: " + error.toString(), error);
+                });
+
+        // Set timeout and retry policy
+        request.setRetryPolicy(new DefaultRetryPolicy(
+                TIMEOUT_MS,
+                MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        ));
 
         queue.add(request);
     }
