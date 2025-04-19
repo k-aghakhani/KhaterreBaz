@@ -1,6 +1,9 @@
 package com.aghakhani.khaterrebaz;
 
 import android.app.AlertDialog;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -47,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvDislikeCount;
     private TextView tvCommentCount;
     private TextView tvCommentsList;
-    private Button btnPreviousMemory; // Added for previous memory button
+    private Button btnPreviousMemory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // Initialize views
-        btnPreviousMemory = findViewById(R.id.btn_previous_memory); // Initialize previous memory button
+        btnPreviousMemory = findViewById(R.id.btn_previous_memory);
         Button btnAnotherMemory = findViewById(R.id.btn_another_memory);
         Button btnWriteMemory = findViewById(R.id.btn_write_memory);
         ImageView ivLike = findViewById(R.id.iv_like);
@@ -78,9 +81,8 @@ public class MainActivity extends AppCompatActivity {
         // Enable Picasso logging
         Picasso.get().setLoggingEnabled(true);
 
-        // Load initial memory (first memory)
-        currentMemoryId = 0; // Start with 0 to load the first memory
-        loadMemory("next");
+        // Check internet connection before loading memories
+        checkInternetConnection();
 
         // Previous Memory button click
         btnPreviousMemory.setOnClickListener(v -> {
@@ -120,6 +122,27 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "لطفاً کامنت بنویسید!", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void checkInternetConnection() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+
+        if (isConnected) {
+            // Internet is available, load the first memory
+            currentMemoryId = 0; // Start with 0 to load the first memory
+            loadMemory("next");
+        } else {
+            // No internet, show dialog
+            new AlertDialog.Builder(this)
+                    .setTitle("عدم اتصال به اینترنت")
+                    .setMessage("اتصال به اینترنت برقرار نیست. لطفاً اتصال خود را بررسی کنید و دوباره امتحان کنید.")
+                    .setPositiveButton("تلاش مجدد", (dialog, which) -> checkInternetConnection())
+                    .setNegativeButton("خروج", (dialog, which) -> finish())
+                    .setCancelable(true) // Allow user to dismiss dialog by pressing back or tapping outside
+                    .show();
+        }
     }
 
     private void loadMemory(String direction) {
