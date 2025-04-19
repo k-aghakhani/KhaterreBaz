@@ -29,7 +29,7 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String API_URL = "http://192.168.1.86/khaterrebaz/api.php"; // Replace with your server IP
+    private static final String API_URL = "http://192.168.1.86/khaterrebaz/api.php"; // Updated IP
     private static final int USER_ID = 1; // Temporary user ID
     private static final String TAG = "KhaterreBaz";
     private static final int TIMEOUT_MS = 15000; // 15 seconds timeout
@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
                             Log.e(TAG, "Server error: " + response.toString());
                         }
                     } catch (Exception e) {
-                        Toast.makeText(MainActivity.this, "Error parsing response: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Error parsing response: " + e.getMessage(), Toast.LENGTH_LONG).show();
                         Log.e(TAG, "Parse error: " + e.getMessage(), e);
                     }
                 },
@@ -138,19 +138,26 @@ public class MainActivity extends AppCompatActivity {
     private void addLikeDislike(int isLike, TextView tvLikeCount, TextView tvDislikeCount) {
         StringRequest request = new StringRequest(Request.Method.POST, API_URL,
                 response -> {
+                    Log.d(TAG, "Raw response: " + response); // Log the raw response
                     try {
-                        JSONObject jsonResponse = new JSONObject(response);
-                        if (jsonResponse.getString("status").equals("success")) {
-                            loadMemory(findViewById(R.id.tv_memory_text), findViewById(R.id.tv_memory_desc),
-                                    tvLikeCount, tvDislikeCount, findViewById(R.id.tv_comment_count), findViewById(R.id.tv_comments_list));
-                            Toast.makeText(MainActivity.this, isLike == 1 ? "لایک شد!" : "دیس‌لایک شد!", Toast.LENGTH_SHORT).show();
-                            Log.d(TAG, "Like/Dislike success: " + response);
+                        // Check if response is a valid JSON
+                        if (response.trim().startsWith("{") || response.trim().startsWith("[")) {
+                            JSONObject jsonResponse = new JSONObject(response);
+                            if (jsonResponse.getString("status").equals("success")) {
+                                loadMemory(findViewById(R.id.tv_memory_text), findViewById(R.id.tv_memory_desc),
+                                        tvLikeCount, tvDislikeCount, findViewById(R.id.tv_comment_count), findViewById(R.id.tv_comments_list));
+                                Toast.makeText(MainActivity.this, isLike == 1 ? "لایک شد!" : "دیس‌لایک شد!", Toast.LENGTH_SHORT).show();
+                                Log.d(TAG, "Like/Dislike success: " + response);
+                            } else {
+                                Toast.makeText(MainActivity.this, "Error: " + jsonResponse.getString("message"), Toast.LENGTH_SHORT).show();
+                                Log.e(TAG, "Server error: " + jsonResponse.toString());
+                            }
                         } else {
-                            Toast.makeText(MainActivity.this, "Error: " + jsonResponse.getString("message"), Toast.LENGTH_SHORT).show();
-                            Log.e(TAG, "Server error: " + jsonResponse.toString());
+                            Toast.makeText(MainActivity.this, "Invalid response from server: " + response, Toast.LENGTH_LONG).show();
+                            Log.e(TAG, "Invalid JSON: " + response);
                         }
                     } catch (Exception e) {
-                        Toast.makeText(MainActivity.this, "Error parsing response: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Error parsing response: " + e.getMessage(), Toast.LENGTH_LONG).show();
                         Log.e(TAG, "Parse error: " + e.getMessage(), e);
                     }
                 },
@@ -183,21 +190,28 @@ public class MainActivity extends AppCompatActivity {
     private void addComment(String comment, TextView tvCommentCount, TextView tvCommentsList, EditText etComment, LinearLayout llCommentInput) {
         StringRequest request = new StringRequest(Request.Method.POST, API_URL,
                 response -> {
+                    Log.d(TAG, "Raw response: " + response); // Log the raw response
                     try {
-                        JSONObject jsonResponse = new JSONObject(response);
-                        if (jsonResponse.getString("status").equals("success")) {
-                            loadMemory(findViewById(R.id.tv_memory_text), findViewById(R.id.tv_memory_desc),
-                                    findViewById(R.id.tv_like_count), findViewById(R.id.tv_dislike_count), tvCommentCount, tvCommentsList);
-                            etComment.setText("");
-                            llCommentInput.setVisibility(View.GONE);
-                            Toast.makeText(MainActivity.this, "کامنت ثبت شد!", Toast.LENGTH_SHORT).show();
-                            Log.d(TAG, "Comment success: " + response);
+                        // Check if response is a valid JSON
+                        if (response.trim().startsWith("{") || response.trim().startsWith("[")) {
+                            JSONObject jsonResponse = new JSONObject(response);
+                            if (jsonResponse.getString("status").equals("success")) {
+                                loadMemory(findViewById(R.id.tv_memory_text), findViewById(R.id.tv_memory_desc),
+                                        findViewById(R.id.tv_like_count), findViewById(R.id.tv_dislike_count), tvCommentCount, tvCommentsList);
+                                etComment.setText("");
+                                llCommentInput.setVisibility(View.GONE);
+                                Toast.makeText(MainActivity.this, "کامنت ثبت شد!", Toast.LENGTH_SHORT).show();
+                                Log.d(TAG, "Comment success: " + response);
+                            } else {
+                                Toast.makeText(MainActivity.this, "Error: " + jsonResponse.getString("message"), Toast.LENGTH_SHORT).show();
+                                Log.e(TAG, "Server error: " + jsonResponse.toString());
+                            }
                         } else {
-                            Toast.makeText(MainActivity.this, "Error: " + jsonResponse.getString("message"), Toast.LENGTH_SHORT).show();
-                            Log.e(TAG, "Server error: " + jsonResponse.toString());
+                            Toast.makeText(MainActivity.this, "Invalid response from server: " + response, Toast.LENGTH_LONG).show();
+                            Log.e(TAG, "Invalid JSON: " + response);
                         }
                     } catch (Exception e) {
-                        Toast.makeText(MainActivity.this, "Error parsing response: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Error parsing response: " + e.getMessage(), Toast.LENGTH_LONG).show();
                         Log.e(TAG, "Parse error: " + e.getMessage(), e);
                     }
                 },
@@ -245,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
                             Log.e(TAG, "Server error: " + response.toString());
                         }
                     } catch (Exception e) {
-                        Toast.makeText(MainActivity.this, "Error parsing response: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Error parsing response: " + e.getMessage(), Toast.LENGTH_LONG).show();
                         Log.e(TAG, "Parse error: " + e.getMessage(), e);
                     }
                 },
