@@ -192,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadMemory(String direction) {
-        String url = API_URL + "?action=get_memory¤t_id=" + currentMemoryId + "&direction=" + direction;
+        String url = API_URL + "?action=get_memory&current_id=" + currentMemoryId + "&direction=" + direction;
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
                 response -> {
                     try {
@@ -279,7 +279,7 @@ public class MainActivity extends AppCompatActivity {
                             JSONObject jsonResponse = new JSONObject(response);
                             if (jsonResponse.getString("status").equals("success")) {
                                 loadMemory("stay");
-                                Toast.makeText(MainActivity.this, isLike == 1 ? "لایک شد!" : "دیس‌لایک شد!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, isLike == 1 ? "ل智能:لایک شد!" : "دیس‌لایک شد!", Toast.LENGTH_SHORT).show();
                                 Log.d(TAG, "Like/Dislike success: " + response);
                             } else {
                                 Toast.makeText(MainActivity.this, "Error: " + jsonResponse.getString("message"), Toast.LENGTH_SHORT).show();
