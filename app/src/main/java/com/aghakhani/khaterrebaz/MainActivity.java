@@ -2,6 +2,7 @@ package com.aghakhani.khaterrebaz;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -35,11 +36,13 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String API_URL = "http://192.168.1.86/khaterrebaz/api.php"; // Updated IP
-    private static final int USER_ID = 1; // Temporary user ID
+    private static final String API_URL = "http://192.168.1.86/khaterrebaz/api.php";
+    private static final int USER_ID = 1;
     private static final String TAG = "KhaterreBaz";
-    private static final int TIMEOUT_MS = 15000; // 15 seconds timeout
-    private static final int MAX_RETRIES = 3; // Retry 3 times
+    private static final int TIMEOUT_MS = 15000;
+    private static final int MAX_RETRIES = 3;
+    private static final String PREFS_NAME = "KhaterreBazPrefs";
+    private static final String KEY_USERNAME = "username";
 
     private RequestQueue queue;
     private int currentMemoryId;
@@ -51,11 +54,17 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvCommentCount;
     private TextView tvCommentsList;
     private Button btnPreviousMemory;
+    private SharedPreferences sharedPreferences;
+    private String username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Initialize SharedPreferences
+        sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        username = sharedPreferences.getString(KEY_USERNAME, null);
 
         // Initialize views
         btnPreviousMemory = findViewById(R.id.btn_previous_memory);
@@ -86,14 +95,14 @@ public class MainActivity extends AppCompatActivity {
 
         // Previous Memory button click
         btnPreviousMemory.setOnClickListener(v -> {
-            if (currentMemoryId > 1) { // Only allow if not on the first memory
+            if (currentMemoryId > 1) {
                 loadMemory("prev");
             } else {
                 Toast.makeText(MainActivity.this, "این اولین خاطره است!", Toast.LENGTH_SHORT).show();
             }
         });
 
-        // Next Memory button click (previously "Another Memory")
+        // Next Memory button click
         btnAnotherMemory.setOnClickListener(v -> loadMemory("next"));
 
         // Write Memory button click
@@ -117,11 +126,50 @@ public class MainActivity extends AppCompatActivity {
         btnSubmitComment.setOnClickListener(v -> {
             String comment = etComment.getText().toString().trim();
             if (!comment.isEmpty()) {
-                addComment(comment, etComment, llCommentInput);
+                if (username == null) {
+                    // Show dialog to ask for username
+                    showUsernameDialog(comment, etComment, llCommentInput);
+                } else {
+                    // Username already exists, proceed to add comment
+                    addComment(comment, etComment, llCommentInput);
+                }
             } else {
                 Toast.makeText(MainActivity.this, "لطفاً کامنت بنویسید!", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void showUsernameDialog(String comment, EditText etComment, LinearLayout llCommentInput) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("نام کاربری");
+
+        final EditText input = new EditText(this);
+        input.setHint("نام خود را وارد کنید (اختیاری)");
+        builder.setView(input);
+
+        builder.setPositiveButton("تایید", (dialog, which) -> {
+            String enteredName = input.getText().toString().trim();
+            username = enteredName.isEmpty() ? "کاربر مهمان" : enteredName;
+            // Save the username in SharedPreferences
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(KEY_USERNAME, username);
+            editor.apply();
+            // Proceed to add comment
+            addComment(comment, etComment, llCommentInput);
+        });
+
+        builder.setNegativeButton("رد کردن", (dialog, which) -> {
+            username = "کاربر مهمان";
+            // Save the default username in SharedPreferences
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(KEY_USERNAME, username);
+            editor.apply();
+            // Proceed to add comment
+            addComment(comment, etComment, llCommentInput);
+        });
+
+        builder.setCancelable(false);
+        builder.show();
     }
 
     private void checkInternetConnection() {
@@ -130,23 +178,21 @@ public class MainActivity extends AppCompatActivity {
         boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
 
         if (isConnected) {
-            // Internet is available, load the first memory
-            currentMemoryId = 0; // Start with 0 to load the first memory
+            currentMemoryId = 0;
             loadMemory("next");
         } else {
-            // No internet, show dialog
             new AlertDialog.Builder(this)
                     .setTitle("عدم اتصال به اینترنت")
                     .setMessage("اتصال به اینترنت برقرار نیست. لطفاً اتصال خود را بررسی کنید و دوباره امتحان کنید.")
                     .setPositiveButton("تلاش مجدد", (dialog, which) -> checkInternetConnection())
                     .setNegativeButton("خروج", (dialog, which) -> finish())
-                    .setCancelable(true) // Allow user to dismiss dialog by pressing back or tapping outside
+                    .setCancelable(true)
                     .show();
         }
     }
 
     private void loadMemory(String direction) {
-        String url = API_URL + "?action=get_memory&current_id=" + currentMemoryId + "&direction=" + direction;
+        String url = API_URL + "?action=get_memory¤t_id=" + currentMemoryId + "&direction=" + direction;
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
                 response -> {
                     try {
@@ -159,7 +205,6 @@ public class MainActivity extends AppCompatActivity {
                             tvDislikeCount.setText(String.valueOf(data.getInt("dislike_count")));
                             tvCommentCount.setText(String.valueOf(data.getInt("comment_count")));
 
-                            // Load image using Picasso
                             String imageUrl = data.optString("image_url", "");
                             Log.d(TAG, "Loading image from URL: " + imageUrl);
                             if (!imageUrl.isEmpty()) {
@@ -188,16 +233,14 @@ public class MainActivity extends AppCompatActivity {
                             loadComments();
                             Log.d(TAG, "Memory loaded: " + data.toString());
 
-                            // Update button states
                             btnPreviousMemory.setEnabled(currentMemoryId > 1);
                         } else {
-                            // Handle "No memories found" case
                             if (response.getString("message").equals("No memories found")) {
                                 new AlertDialog.Builder(MainActivity.this)
                                         .setTitle("پایان خاطره‌ها")
                                         .setMessage("خاطره جدیدی وجود نداره، لطفاً بعداً سر بزن! می‌خوای از اول شروع کنی؟")
                                         .setPositiveButton("بله، از اول", (dialog, which) -> {
-                                            currentMemoryId = 0; // Reset to load the first memory
+                                            currentMemoryId = 0;
                                             loadMemory("next");
                                         })
                                         .setNegativeButton("خیر", null)
@@ -218,7 +261,6 @@ public class MainActivity extends AppCompatActivity {
                     Log.e(TAG, "Network error: " + error.toString(), error);
                 });
 
-        // Set timeout and retry policy
         request.setRetryPolicy(new DefaultRetryPolicy(
                 TIMEOUT_MS,
                 MAX_RETRIES,
@@ -236,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
                         if (response.trim().startsWith("{") || response.trim().startsWith("[")) {
                             JSONObject jsonResponse = new JSONObject(response);
                             if (jsonResponse.getString("status").equals("success")) {
-                                loadMemory("stay"); // Reload the same memory
+                                loadMemory("stay");
                                 Toast.makeText(MainActivity.this, isLike == 1 ? "لایک شد!" : "دیس‌لایک شد!", Toast.LENGTH_SHORT).show();
                                 Log.d(TAG, "Like/Dislike success: " + response);
                             } else {
@@ -285,7 +327,7 @@ public class MainActivity extends AppCompatActivity {
                         if (response.trim().startsWith("{") || response.trim().startsWith("[")) {
                             JSONObject jsonResponse = new JSONObject(response);
                             if (jsonResponse.getString("status").equals("success")) {
-                                loadMemory("stay"); // Reload the same memory
+                                loadMemory("stay");
                                 etComment.setText("");
                                 llCommentInput.setVisibility(View.GONE);
                                 Toast.makeText(MainActivity.this, "کامنت ثبت شد!", Toast.LENGTH_SHORT).show();
@@ -337,7 +379,10 @@ public class MainActivity extends AppCompatActivity {
                             StringBuilder commentText = new StringBuilder();
                             for (int i = 0; i < comments.length(); i++) {
                                 JSONObject comment = comments.getJSONObject(i);
-                                commentText.append("کاربر: ").append(comment.getString("comment_text")).append("\n");
+                                commentText.append(username).append(": ").append(comment.getString("comment_text"));
+                                if (i < comments.length() - 1) {
+                                    commentText.append("\n\n");
+                                }
                             }
                             tvCommentsList.setText(commentText.toString());
                             Log.d(TAG, "Comments loaded: " + response.toString());
