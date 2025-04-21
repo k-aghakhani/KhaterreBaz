@@ -155,6 +155,8 @@
             </LinearLayout>
 
             <!-- Comment Input Section (Hidden by Default) -->
+
+
             <LinearLayout
                 android:id="@+id/ll_comment_input"
                 android:layout_width="match_parent"
@@ -183,19 +185,29 @@
                     android:layout_gravity="end"
                     android:layout_marginTop="8dp" />
 
-                <!-- Comments List -->
-                <TextView
-                    android:id="@+id/tv_comments_list"
+                <!-- Comments List with Scroll -->
+                <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp">
+                <androidx.core.widget.NestedScrollView
+                    android:id="@+id/scroll_comments"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text=""
-                    android:textColor="@color/dark_gray"
-                    android:textSize="14sp"
-                    android:layout_marginTop="8dp"
-                    android:lineSpacingExtra="4dp"
-                    android:divider="@android:color/darker_gray"
-                    android:dividerHeight="0.5dp"
-                    android:showDividers="middle" />
+                    android:layout_marginTop="8dp">
+
+                    <TextView
+                        android:id="@+id/tv_comments_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:textColor="@color/dark_gray"
+                        android:textSize="14sp"
+                        android:lineSpacingExtra="4dp"
+                        android:divider="@android:color/darker_gray"
+                        android:dividerHeight="0.5dp"
+                        android:showDividers="middle" />
+                </androidx.core.widget.NestedScrollView>
+                </ScrollView>
             </LinearLayout>
 
         </LinearLayout>
@@ -247,6 +259,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintWidth_percent="0.9"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
