@@ -155,8 +155,6 @@
             </LinearLayout>
 
             <!-- Comment Input Section (Hidden by Default) -->
-
-
             <LinearLayout
                 android:id="@+id/ll_comment_input"
                 android:layout_width="match_parent"
@@ -188,11 +186,7 @@
                 <!-- Comments List with Scroll -->
                 <ScrollView
                     android:layout_width="match_parent"
-                    android:layout_height="200dp">
-                <androidx.core.widget.NestedScrollView
-                    android:id="@+id/scroll_comments"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="200dp"
                     android:layout_marginTop="8dp">
 
                     <TextView
@@ -206,7 +200,6 @@
                         android:divider="@android:color/darker_gray"
                         android:dividerHeight="0.5dp"
                         android:showDividers="middle" />
-                </androidx.core.widget.NestedScrollView>
                 </ScrollView>
             </LinearLayout>
 
