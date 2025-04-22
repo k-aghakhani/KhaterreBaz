@@ -3,6 +3,7 @@ package com.aghakhani.khaterrebaz;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -53,20 +54,30 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvDislikeCount;
     private TextView tvCommentCount;
     private TextView tvCommentsList;
+    private TextView tvAppTitle;
     private Button btnPreviousMemory;
     private SharedPreferences sharedPreferences;
     private String username;
+
+    // Typefaces for Vazir font
+    private Typeface vazirRegular;
+    private Typeface vazirBold;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Load Vazir fonts from assets
+        vazirRegular = Typeface.createFromAsset(getAssets(), "fonts/Vazir-Regular.ttf");
+        vazirBold = Typeface.createFromAsset(getAssets(), "fonts/Vazir-Bold.ttf");
+
         // Initialize SharedPreferences
         sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         username = sharedPreferences.getString(KEY_USERNAME, null);
 
         // Initialize views
+        tvAppTitle = findViewById(R.id.tv_app_title);
         btnPreviousMemory = findViewById(R.id.btn_previous_memory);
         Button btnAnotherMemory = findViewById(R.id.btn_another_memory);
         Button btnWriteMemory = findViewById(R.id.btn_write_memory);
@@ -83,6 +94,20 @@ public class MainActivity extends AppCompatActivity {
         tvMemoryText = findViewById(R.id.tv_memory_text);
         tvMemoryDesc = findViewById(R.id.tv_memory_desc);
         ivMemoryImage = findViewById(R.id.iv_memory_image);
+
+        // Apply Vazir font to all text-based UI elements
+        tvAppTitle.setTypeface(vazirBold); // Bold for the app title
+        tvMemoryText.setTypeface(vazirRegular); // Regular for memory text
+        tvMemoryDesc.setTypeface(vazirRegular); // Regular for memory description
+        tvLikeCount.setTypeface(vazirRegular); // Regular for like count
+        tvDislikeCount.setTypeface(vazirRegular); // Regular for dislike count
+        tvCommentCount.setTypeface(vazirRegular); // Regular for comment count
+        tvCommentsList.setTypeface(vazirRegular); // Regular for comments list
+        etComment.setTypeface(vazirRegular); // Regular for comment input
+        btnSubmitComment.setTypeface(vazirRegular); // Regular for submit button
+        btnAnotherMemory.setTypeface(vazirRegular); // Regular for another memory button
+        btnPreviousMemory.setTypeface(vazirRegular); // Regular for previous memory button
+        btnWriteMemory.setTypeface(vazirRegular); // Regular for write memory button
 
         // Initialize Volley
         queue = Volley.newRequestQueue(this);
@@ -145,6 +170,7 @@ public class MainActivity extends AppCompatActivity {
 
         final EditText input = new EditText(this);
         input.setHint("نام خود را وارد کنید (اختیاری)");
+        input.setTypeface(vazirRegular); // Apply Vazir font to dialog input
         builder.setView(input);
 
         builder.setPositiveButton("تایید", (dialog, which) -> {
@@ -279,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
                             JSONObject jsonResponse = new JSONObject(response);
                             if (jsonResponse.getString("status").equals("success")) {
                                 loadMemory("stay");
-                                Toast.makeText(MainActivity.this, isLike == 1 ? "ل智能:لایک شد!" : "دیس‌لایک شد!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, isLike == 1 ? "لایک شد!" : "دیس‌لایک شد!", Toast.LENGTH_SHORT).show();
                                 Log.d(TAG, "Like/Dislike success: " + response);
                             } else {
                                 Toast.makeText(MainActivity.this, "Error: " + jsonResponse.getString("message"), Toast.LENGTH_SHORT).show();
