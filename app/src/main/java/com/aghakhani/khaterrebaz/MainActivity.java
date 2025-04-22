@@ -166,13 +166,24 @@ public class MainActivity extends AppCompatActivity {
 
     private void showUsernameDialog(String comment, EditText etComment, LinearLayout llCommentInput) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("نام کاربری");
 
+        // Create custom TextView for title
+        TextView titleView = new TextView(this);
+        titleView.setText("نام کاربری");
+        titleView.setTypeface(vazirBold);
+        titleView.setTextSize(20);
+        titleView.setPadding(40, 40, 40, 20);
+        titleView.setTextColor(getResources().getColor(android.R.color.black));
+        builder.setCustomTitle(titleView);
+
+        // Create custom EditText for input
         final EditText input = new EditText(this);
         input.setHint("نام خود را وارد کنید (اختیاری)");
-        input.setTypeface(vazirRegular); // Apply Vazir font to dialog input
+        input.setTypeface(vazirRegular);
+        input.setPadding(40, 20, 40, 20);
         builder.setView(input);
 
+        // Set positive and negative buttons
         builder.setPositiveButton("تایید", (dialog, which) -> {
             String enteredName = input.getText().toString().trim();
             username = enteredName.isEmpty() ? "کاربر مهمان" : enteredName;
@@ -195,7 +206,20 @@ public class MainActivity extends AppCompatActivity {
         });
 
         builder.setCancelable(false);
-        builder.show();
+
+        // Show dialog and apply font to buttons
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        // Apply Vazir font to dialog buttons
+        Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+        if (positiveButton != null) {
+            positiveButton.setTypeface(vazirRegular);
+        }
+        if (negativeButton != null) {
+            negativeButton.setTypeface(vazirRegular);
+        }
     }
 
     private void checkInternetConnection() {
@@ -207,13 +231,44 @@ public class MainActivity extends AppCompatActivity {
             currentMemoryId = 0;
             loadMemory("next");
         } else {
-            new AlertDialog.Builder(this)
-                    .setTitle("عدم اتصال به اینترنت")
-                    .setMessage("اتصال به اینترنت برقرار نیست. لطفاً اتصال خود را بررسی کنید و دوباره امتحان کنید.")
-                    .setPositiveButton("تلاش مجدد", (dialog, which) -> checkInternetConnection())
-                    .setNegativeButton("خروج", (dialog, which) -> finish())
-                    .setCancelable(true)
-                    .show();
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+            // Create custom TextView for title
+            TextView titleView = new TextView(this);
+            titleView.setText("عدم اتصال به اینترنت");
+            titleView.setTypeface(vazirBold);
+            titleView.setTextSize(20);
+            titleView.setPadding(40, 40, 40, 20);
+            titleView.setTextColor(getResources().getColor(android.R.color.black));
+            builder.setCustomTitle(titleView);
+
+            // Create custom TextView for message
+            TextView messageView = new TextView(this);
+            messageView.setText("اتصال به اینترنت برقرار نیست. لطفاً اتصال خود را بررسی کنید و دوباره امتحان کنید.");
+            messageView.setTypeface(vazirRegular);
+            messageView.setTextSize(16);
+            messageView.setPadding(40, 20, 40, 20);
+            messageView.setTextColor(getResources().getColor(android.R.color.black));
+            builder.setView(messageView);
+
+            // Set positive and negative buttons
+            builder.setPositiveButton("تلاش مجدد", (dialog, which) -> checkInternetConnection());
+            builder.setNegativeButton("خروج", (dialog, which) -> finish());
+            builder.setCancelable(true);
+
+            // Show dialog and apply font to buttons
+            AlertDialog dialog = builder.create();
+            dialog.show();
+
+            // Apply Vazir font to dialog buttons
+            Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+            if (positiveButton != null) {
+                positiveButton.setTypeface(vazirRegular);
+            }
+            if (negativeButton != null) {
+                negativeButton.setTypeface(vazirRegular);
+            }
         }
     }
 
@@ -262,16 +317,47 @@ public class MainActivity extends AppCompatActivity {
                             btnPreviousMemory.setEnabled(currentMemoryId > 1);
                         } else {
                             if (response.getString("message").equals("No memories found")) {
-                                new AlertDialog.Builder(MainActivity.this)
-                                        .setTitle("پایان خاطره‌ها")
-                                        .setMessage("خاطره جدیدی وجود نداره، لطفاً بعداً سر بزن! می‌خوای از اول شروع کنی؟")
-                                        .setPositiveButton("بله، از اول", (dialog, which) -> {
-                                            currentMemoryId = 0;
-                                            loadMemory("next");
-                                        })
-                                        .setNegativeButton("خیر", null)
-                                        .setCancelable(true)
-                                        .show();
+                                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+                                // Create custom TextView for title
+                                TextView titleView = new TextView(this);
+                                titleView.setText("پایان خاطره‌ها");
+                                titleView.setTypeface(vazirBold);
+                                titleView.setTextSize(20);
+                                titleView.setPadding(40, 40, 40, 20);
+                                titleView.setTextColor(getResources().getColor(android.R.color.black));
+                                builder.setCustomTitle(titleView);
+
+                                // Create custom TextView for message
+                                TextView messageView = new TextView(this);
+                                messageView.setText("خاطره جدیدی وجود نداره، لطفاً بعداً سر بزن! می‌خوای از اول شروع کنی؟");
+                                messageView.setTypeface(vazirRegular);
+                                messageView.setTextSize(16);
+                                messageView.setPadding(40, 20, 40, 20);
+                                messageView.setTextColor(getResources().getColor(android.R.color.black));
+                                builder.setView(messageView);
+
+                                // Set positive and negative buttons
+                                builder.setPositiveButton("بله، از اول", (dialog, which) -> {
+                                    currentMemoryId = 0;
+                                    loadMemory("next");
+                                });
+                                builder.setNegativeButton("خیر", null);
+                                builder.setCancelable(true);
+
+                                // Show dialog and apply font to buttons
+                                AlertDialog dialog = builder.create();
+                                dialog.show();
+
+                                // Apply Vazir font to dialog buttons
+                                Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                                Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+                                if (positiveButton != null) {
+                                    positiveButton.setTypeface(vazirRegular);
+                                }
+                                if (negativeButton != null) {
+                                    negativeButton.setTypeface(vazirRegular);
+                                }
                             } else {
                                 Toast.makeText(MainActivity.this, "Error: " + response.getString("message"), Toast.LENGTH_SHORT).show();
                                 Log.e(TAG, "Server error: " + response.toString());
