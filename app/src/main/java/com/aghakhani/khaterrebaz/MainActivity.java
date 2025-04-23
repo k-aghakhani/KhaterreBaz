@@ -34,16 +34,17 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String API_URL = "https://rasfam.ir/khaterrebaz/api.php";
-    private static final int USER_ID = 1;
     private static final String TAG = "KhaterreBaz";
     private static final int TIMEOUT_MS = 15000;
     private static final int MAX_RETRIES = 3;
     private static final String PREFS_NAME = "KhaterreBazPrefs";
     private static final String KEY_USERNAME = "username";
+    private static final String KEY_USER_ID = "user_id"; // New key for storing user_id
 
     private RequestQueue queue;
     private int currentMemoryId;
@@ -58,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnPreviousMemory;
     private SharedPreferences sharedPreferences;
     private String username;
+    private String userId; // Store the unique user_id for this device
 
     // Typefaces for Vazir font
     private Typeface vazirRegular;
@@ -74,6 +76,19 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize SharedPreferences
         sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+
+        // Check if user_id exists in SharedPreferences, if not, generate a new one
+        userId = sharedPreferences.getString(KEY_USER_ID, null);
+        if (userId == null) {
+            userId = UUID.randomUUID().toString(); // Generate a unique user_id
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(KEY_USER_ID, userId);
+            editor.apply();
+            Log.d(TAG, "Generated new user_id: " + userId);
+        } else {
+            Log.d(TAG, "Loaded existing user_id: " + userId);
+        }
+
         username = sharedPreferences.getString(KEY_USERNAME, null);
 
         // Initialize views
@@ -416,7 +431,7 @@ public class MainActivity extends AppCompatActivity {
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
                 params.put("action", "add_like");
-                params.put("user_id", String.valueOf(USER_ID));
+                params.put("user_id", userId); // Use the unique user_id
                 params.put("memory_id", String.valueOf(currentMemoryId));
                 params.put("is_like", String.valueOf(isLike));
                 Log.d(TAG, "Sending params: " + params.toString());
@@ -467,7 +482,7 @@ public class MainActivity extends AppCompatActivity {
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
                 params.put("action", "add_comment");
-                params.put("user_id", String.valueOf(USER_ID));
+                params.put("user_id", userId); // Use the unique user_id
                 params.put("memory_id", String.valueOf(currentMemoryId));
                 params.put("comment_text", comment);
                 Log.d(TAG, "Sending params: " + params.toString());
