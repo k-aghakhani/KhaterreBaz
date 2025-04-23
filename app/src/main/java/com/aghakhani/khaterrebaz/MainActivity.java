@@ -37,7 +37,7 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String API_URL = "http://192.168.1.86/khaterrebaz/api.php";
+    private static final String API_URL = "https://rasfam.ir/khaterrebaz/api.php";
     private static final int USER_ID = 1;
     private static final String TAG = "KhaterreBaz";
     private static final int TIMEOUT_MS = 15000;
@@ -291,6 +291,8 @@ public class MainActivity extends AppCompatActivity {
                             if (!imageUrl.isEmpty()) {
                                 Picasso.get()
                                         .load(imageUrl)
+                                        .resize(600, 400) // Resize to a fixed size (width: 600px, height: 400px)
+                                        .centerCrop() // Crop the image to fit the ImageView
                                         .placeholder(R.drawable.sample_memory)
                                         .error(R.drawable.sample_memory)
                                         .into(ivMemoryImage, new Callback() {

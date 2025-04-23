@@ -45,10 +45,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
                 android:scaleType="centerCrop"
+                android:adjustViewBounds="false"
                 android:src="@drawable/sample_memory"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                android:contentDescription="Memory image" />
 
             <!-- Memory Text -->
             <TextView
@@ -186,7 +185,7 @@
                 <!-- Comments List with Scroll -->
                 <ScrollView
                     android:layout_width="match_parent"
-                    android:layout_height="200dp"
+                    android:layout_height="150dp"
                     android:layout_marginTop="8dp">
 
                     <TextView
