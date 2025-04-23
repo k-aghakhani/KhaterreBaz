@@ -1,4 +1,4 @@
-# KhaterreBaz
+## KhaterreBaz
 KhaterreBaz is an Android application that allows users to revisit nostalgic memories, like or dislike them, and leave comments. The app is designed to bring back fond memories and create a space for sharing emotions.
 
 # ✨ Features
@@ -32,7 +32,7 @@ Select Open an existing project and choose the cloned folder.
 
 Set Up the Server:
 
-Upload the api.php file to your server (e.g., at https://rasfam.ir/khaterrebaz/api.php).
+Upload the api.php file to your server.
 Set up your MySQL database and create the required tables (e.g., memories, likes, and comments).
 
 
