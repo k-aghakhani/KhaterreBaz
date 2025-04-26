@@ -111,8 +111,13 @@ public class WriteMemoryActivity extends AppCompatActivity {
             String title = etMemoryTitle.getText().toString().trim();
             String description = etMemoryDescription.getText().toString().trim();
 
-            if (title.isEmpty() || description.isEmpty()) {
-                Toast.makeText(WriteMemoryActivity.this, "لطفاً عنوان و توضیحات خاطره را وارد کنید!", Toast.LENGTH_SHORT).show();
+            // Check if all fields are filled
+            if (title.isEmpty()) {
+                Toast.makeText(WriteMemoryActivity.this, "لطفاً عنوان خاطره را وارد کنید!", Toast.LENGTH_SHORT).show();
+            } else if (description.isEmpty()) {
+                Toast.makeText(WriteMemoryActivity.this, "لطفاً توضیحات خاطره را وارد کنید!", Toast.LENGTH_SHORT).show();
+            } else if (selectedImageUri == null) {
+                Toast.makeText(WriteMemoryActivity.this, "لطفاً یک تصویر انتخاب کنید!", Toast.LENGTH_SHORT).show();
             } else {
                 submitMemory(title, description, etMemoryTitle, etMemoryDescription);
             }
@@ -132,7 +137,7 @@ public class WriteMemoryActivity extends AppCompatActivity {
                                 ivMemoryImagePreview.setImageBitmap(null);
                                 ivMemoryImagePreview.setVisibility(View.GONE);
                                 selectedImageUri = null;
-                                showThankYouDialog(); // Show thank you dialog
+                                showThankYouDialog();
                             } else {
                                 Toast.makeText(WriteMemoryActivity.this, "خطا: " + jsonResponse.getString("message"), Toast.LENGTH_SHORT).show();
                             }
@@ -197,7 +202,7 @@ public class WriteMemoryActivity extends AppCompatActivity {
         messageView.setTextColor(getResources().getColor(android.R.color.black));
         builder.setView(messageView);
 
-        builder.setPositiveButton("باشه", (dialog, which) -> finish()); // Close the activity after clicking "OK"
+        builder.setPositiveButton("باشه", (dialog, which) -> finish());
         builder.setCancelable(false);
 
         AlertDialog dialog = builder.create();
