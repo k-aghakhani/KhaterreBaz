@@ -2,6 +2,7 @@ package com.aghakhani.khaterrebaz;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
@@ -44,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int MAX_RETRIES = 3;
     private static final String PREFS_NAME = "KhaterreBazPrefs";
     private static final String KEY_USERNAME = "username";
-    private static final String KEY_USER_ID = "user_id"; // New key for storing user_id
+    private static final String KEY_USER_ID = "user_id";
 
     private RequestQueue queue;
     private int currentMemoryId;
@@ -59,9 +60,9 @@ public class MainActivity extends AppCompatActivity {
     private Button btnPreviousMemory;
     private SharedPreferences sharedPreferences;
     private String username;
-    private String userId; // Store the unique user_id for this device
+    private String userId;
+    private LinearLayout llCommentsContainer;
 
-    // Typefaces for Vazir font
     private Typeface vazirRegular;
     private Typeface vazirBold;
 
@@ -70,17 +71,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Load Vazir fonts from assets
         vazirRegular = Typeface.createFromAsset(getAssets(), "fonts/Vazir-Regular.ttf");
         vazirBold = Typeface.createFromAsset(getAssets(), "fonts/Vazir-Bold.ttf");
 
-        // Initialize SharedPreferences
         sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
-        // Check if user_id exists in SharedPreferences, if not, generate a new one
         userId = sharedPreferences.getString(KEY_USER_ID, null);
         if (userId == null) {
-            userId = UUID.randomUUID().toString(); // Generate a unique user_id
+            userId = UUID.randomUUID().toString();
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString(KEY_USER_ID, userId);
             editor.apply();
@@ -91,7 +89,6 @@ public class MainActivity extends AppCompatActivity {
 
         username = sharedPreferences.getString(KEY_USERNAME, null);
 
-        // Initialize views
         tvAppTitle = findViewById(R.id.tv_app_title);
         btnPreviousMemory = findViewById(R.id.btn_previous_memory);
         Button btnAnotherMemory = findViewById(R.id.btn_another_memory);
@@ -102,38 +99,34 @@ public class MainActivity extends AppCompatActivity {
         tvDislikeCount = findViewById(R.id.tv_dislike_count);
         ImageView ivComment = findViewById(R.id.iv_comment);
         tvCommentCount = findViewById(R.id.tv_comment_count);
+        ImageView ivReportMemory = findViewById(R.id.iv_report_memory);
         LinearLayout llCommentInput = findViewById(R.id.ll_comment_input);
         EditText etComment = findViewById(R.id.et_comment);
         Button btnSubmitComment = findViewById(R.id.btn_submit_comment);
         tvCommentsList = findViewById(R.id.tv_comments_list);
+        llCommentsContainer = findViewById(R.id.ll_comments_container);
         tvMemoryText = findViewById(R.id.tv_memory_text);
         tvMemoryDesc = findViewById(R.id.tv_memory_desc);
         ivMemoryImage = findViewById(R.id.iv_memory_image);
 
-        // Apply Vazir font to all text-based UI elements
-        tvAppTitle.setTypeface(vazirBold); // Bold for the app title
-        tvMemoryText.setTypeface(vazirRegular); // Regular for memory text
-        tvMemoryDesc.setTypeface(vazirRegular); // Regular for memory description
-        tvLikeCount.setTypeface(vazirRegular); // Regular for like count
-        tvDislikeCount.setTypeface(vazirRegular); // Regular for dislike count
-        tvCommentCount.setTypeface(vazirRegular); // Regular for comment count
-        tvCommentsList.setTypeface(vazirRegular); // Regular for comments list
-        etComment.setTypeface(vazirRegular); // Regular for comment input
-        btnSubmitComment.setTypeface(vazirRegular); // Regular for submit button
-        btnAnotherMemory.setTypeface(vazirRegular); // Regular for another memory button
-        btnPreviousMemory.setTypeface(vazirRegular); // Regular for previous memory button
-        btnWriteMemory.setTypeface(vazirRegular); // Regular for write memory button
+        tvAppTitle.setTypeface(vazirBold);
+        tvMemoryText.setTypeface(vazirRegular);
+        tvMemoryDesc.setTypeface(vazirRegular);
+        tvLikeCount.setTypeface(vazirRegular);
+        tvDislikeCount.setTypeface(vazirRegular);
+        tvCommentCount.setTypeface(vazirRegular);
+        tvCommentsList.setTypeface(vazirRegular);
+        etComment.setTypeface(vazirRegular);
+        btnSubmitComment.setTypeface(vazirRegular);
+        btnAnotherMemory.setTypeface(vazirRegular);
+        btnPreviousMemory.setTypeface(vazirRegular);
+        btnWriteMemory.setTypeface(vazirRegular);
 
-        // Initialize Volley
         queue = Volley.newRequestQueue(this);
-
-        // Enable Picasso logging
         Picasso.get().setLoggingEnabled(true);
 
-        // Check internet connection before loading memories
         checkInternetConnection();
 
-        // Previous Memory button click
         btnPreviousMemory.setOnClickListener(v -> {
             if (currentMemoryId > 1) {
                 loadMemory("prev");
@@ -142,19 +135,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Next Memory button click
         btnAnotherMemory.setOnClickListener(v -> loadMemory("next"));
 
-        // Write Memory button click
-        btnWriteMemory.setOnClickListener(v -> Toast.makeText(MainActivity.this, "به زودی می‌تونی خاطره بنویسی!", Toast.LENGTH_SHORT).show());
+        btnWriteMemory.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, WriteMemoryActivity.class);
+            startActivity(intent);
+        });
 
-        // Like button click
         ivLike.setOnClickListener(v -> addLikeDislike(1, tvLikeCount, tvDislikeCount));
 
-        // Dislike button click
         ivDislike.setOnClickListener(v -> addLikeDislike(0, tvLikeCount, tvDislikeCount));
 
-        // Comment button click
         ivComment.setOnClickListener(v -> {
             llCommentInput.setVisibility(llCommentInput.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
             if (llCommentInput.getVisibility() == View.VISIBLE) {
@@ -162,15 +153,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Submit comment button click
+        ivReportMemory.setOnClickListener(v -> showReportDialog("memory", currentMemoryId, null));
+
         btnSubmitComment.setOnClickListener(v -> {
             String comment = etComment.getText().toString().trim();
             if (!comment.isEmpty()) {
                 if (username == null) {
-                    // Show dialog to ask for username
                     showUsernameDialog(comment, etComment, llCommentInput);
                 } else {
-                    // Username already exists, proceed to add comment
                     addComment(comment, etComment, llCommentInput);
                 }
             } else {
@@ -182,7 +172,6 @@ public class MainActivity extends AppCompatActivity {
     private void showUsernameDialog(String comment, EditText etComment, LinearLayout llCommentInput) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-        // Create custom TextView for title
         TextView titleView = new TextView(this);
         titleView.setText("نام کاربری");
         titleView.setTypeface(vazirBold);
@@ -191,42 +180,34 @@ public class MainActivity extends AppCompatActivity {
         titleView.setTextColor(getResources().getColor(android.R.color.black));
         builder.setCustomTitle(titleView);
 
-        // Create custom EditText for input
         final EditText input = new EditText(this);
         input.setHint("نام خود را وارد کنید (اختیاری)");
         input.setTypeface(vazirRegular);
         input.setPadding(40, 20, 40, 20);
         builder.setView(input);
 
-        // Set positive and negative buttons
         builder.setPositiveButton("تایید", (dialog, which) -> {
             String enteredName = input.getText().toString().trim();
             username = enteredName.isEmpty() ? "کاربر مهمان" : enteredName;
-            // Save the username in SharedPreferences
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString(KEY_USERNAME, username);
             editor.apply();
-            // Proceed to add comment
             addComment(comment, etComment, llCommentInput);
         });
 
         builder.setNegativeButton("رد کردن", (dialog, which) -> {
             username = "کاربر مهمان";
-            // Save the default username in SharedPreferences
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString(KEY_USERNAME, username);
             editor.apply();
-            // Proceed to add comment
             addComment(comment, etComment, llCommentInput);
         });
 
         builder.setCancelable(false);
 
-        // Show dialog and apply font to buttons
         AlertDialog dialog = builder.create();
         dialog.show();
 
-        // Apply Vazir font to dialog buttons
         Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
         if (positiveButton != null) {
@@ -235,6 +216,95 @@ public class MainActivity extends AppCompatActivity {
         if (negativeButton != null) {
             negativeButton.setTypeface(vazirRegular);
         }
+    }
+
+    private void showReportDialog(String type, int memoryId, Integer commentId) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        TextView titleView = new TextView(this);
+        titleView.setText("گزارش تخلف");
+        titleView.setTypeface(vazirBold);
+        titleView.setTextSize(20);
+        titleView.setPadding(40, 40, 40, 20);
+        titleView.setTextColor(getResources().getColor(android.R.color.black));
+        builder.setCustomTitle(titleView);
+
+        final EditText input = new EditText(this);
+        input.setHint("دلیل گزارش را بنویسید (مثلاً: محتوای نامناسب)");
+        input.setTypeface(vazirRegular);
+        input.setPadding(40, 20, 40, 20);
+        input.setMinLines(3);
+        input.setGravity(View.TEXT_ALIGNMENT_VIEW_START);
+        builder.setView(input);
+
+        builder.setPositiveButton("ارسال", (dialog, which) -> {
+            String reason = input.getText().toString().trim();
+            if (reason.isEmpty()) {
+                Toast.makeText(MainActivity.this, "لطفاً دلیل گزارش را وارد کنید!", Toast.LENGTH_SHORT).show();
+            } else {
+                submitReport(type, memoryId, commentId, reason);
+            }
+        });
+
+        builder.setNegativeButton("لغو", null);
+        builder.setCancelable(true);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+        if (positiveButton != null) {
+            positiveButton.setTypeface(vazirRegular);
+        }
+        if (negativeButton != null) {
+            negativeButton.setTypeface(vazirRegular);
+        }
+    }
+
+    private void submitReport(String type, int memoryId, Integer commentId, String reason) {
+        StringRequest request = new StringRequest(Request.Method.POST, API_URL,
+                response -> {
+                    try {
+                        if (response.trim().startsWith("{") || response.trim().startsWith("[")) {
+                            JSONObject jsonResponse = new JSONObject(response);
+                            if (jsonResponse.getString("status").equals("success")) {
+                                Toast.makeText(MainActivity.this, "گزارش با موفقیت ثبت شد!", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(MainActivity.this, "خطا: " + jsonResponse.getString("message"), Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Toast.makeText(MainActivity.this, "پاسخ نامعتبر از سرور!", Toast.LENGTH_LONG).show();
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(MainActivity.this, "خطا در پردازش پاسخ: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                },
+                error -> {
+                    Toast.makeText(MainActivity.this, "خطا در شبکه: " + error.toString(), Toast.LENGTH_LONG).show();
+                }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("action", "report_content");
+                params.put("user_id", userId);
+                if (type.equals("memory")) {
+                    params.put("memory_id", String.valueOf(memoryId));
+                } else if (type.equals("comment")) {
+                    params.put("comment_id", String.valueOf(commentId));
+                }
+                params.put("reason", reason);
+                return params;
+            }
+        };
+
+        request.setRetryPolicy(new DefaultRetryPolicy(
+                TIMEOUT_MS,
+                MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        ));
+
+        queue.add(request);
     }
 
     private void checkInternetConnection() {
@@ -248,7 +318,6 @@ public class MainActivity extends AppCompatActivity {
         } else {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-            // Create custom TextView for title
             TextView titleView = new TextView(this);
             titleView.setText("عدم اتصال به اینترنت");
             titleView.setTypeface(vazirBold);
@@ -257,7 +326,6 @@ public class MainActivity extends AppCompatActivity {
             titleView.setTextColor(getResources().getColor(android.R.color.black));
             builder.setCustomTitle(titleView);
 
-            // Create custom TextView for message
             TextView messageView = new TextView(this);
             messageView.setText("اتصال به اینترنت برقرار نیست. لطفاً اتصال خود را بررسی کنید و دوباره امتحان کنید.");
             messageView.setTypeface(vazirRegular);
@@ -266,16 +334,13 @@ public class MainActivity extends AppCompatActivity {
             messageView.setTextColor(getResources().getColor(android.R.color.black));
             builder.setView(messageView);
 
-            // Set positive and negative buttons
             builder.setPositiveButton("تلاش مجدد", (dialog, which) -> checkInternetConnection());
             builder.setNegativeButton("خروج", (dialog, which) -> finish());
             builder.setCancelable(true);
 
-            // Show dialog and apply font to buttons
             AlertDialog dialog = builder.create();
             dialog.show();
 
-            // Apply Vazir font to dialog buttons
             Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
             Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
             if (positiveButton != null) {
@@ -306,8 +371,8 @@ public class MainActivity extends AppCompatActivity {
                             if (!imageUrl.isEmpty()) {
                                 Picasso.get()
                                         .load(imageUrl)
-                                        .resize(600, 400) // Resize to a fixed size (width: 600px, height: 400px)
-                                        .centerCrop() // Crop the image to fit the ImageView
+                                        .resize(600, 400)
+                                        .centerCrop()
                                         .placeholder(R.drawable.sample_memory)
                                         .error(R.drawable.sample_memory)
                                         .into(ivMemoryImage, new Callback() {
@@ -336,7 +401,6 @@ public class MainActivity extends AppCompatActivity {
                             if (response.getString("message").equals("No memories found")) {
                                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-                                // Create custom TextView for title
                                 TextView titleView = new TextView(this);
                                 titleView.setText("پایان خاطره‌ها");
                                 titleView.setTypeface(vazirBold);
@@ -345,7 +409,6 @@ public class MainActivity extends AppCompatActivity {
                                 titleView.setTextColor(getResources().getColor(android.R.color.black));
                                 builder.setCustomTitle(titleView);
 
-                                // Create custom TextView for message
                                 TextView messageView = new TextView(this);
                                 messageView.setText("خاطره جدیدی وجود نداره، لطفاً بعداً سر بزن! می‌خوای از اول شروع کنی؟");
                                 messageView.setTypeface(vazirRegular);
@@ -354,7 +417,6 @@ public class MainActivity extends AppCompatActivity {
                                 messageView.setTextColor(getResources().getColor(android.R.color.black));
                                 builder.setView(messageView);
 
-                                // Set positive and negative buttons
                                 builder.setPositiveButton("بله، از اول", (dialog, which) -> {
                                     currentMemoryId = 0;
                                     loadMemory("next");
@@ -362,11 +424,9 @@ public class MainActivity extends AppCompatActivity {
                                 builder.setNegativeButton("خیر", null);
                                 builder.setCancelable(true);
 
-                                // Show dialog and apply font to buttons
                                 AlertDialog dialog = builder.create();
                                 dialog.show();
 
-                                // Apply Vazir font to dialog buttons
                                 Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
                                 Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
                                 if (positiveButton != null) {
@@ -431,7 +491,7 @@ public class MainActivity extends AppCompatActivity {
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
                 params.put("action", "add_like");
-                params.put("user_id", userId); // Use the unique user_id
+                params.put("user_id", userId);
                 params.put("memory_id", String.valueOf(currentMemoryId));
                 params.put("is_like", String.valueOf(isLike));
                 Log.d(TAG, "Sending params: " + params.toString());
@@ -482,7 +542,7 @@ public class MainActivity extends AppCompatActivity {
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
                 params.put("action", "add_comment");
-                params.put("user_id", userId); // Use the unique user_id
+                params.put("user_id", userId);
                 params.put("memory_id", String.valueOf(currentMemoryId));
                 params.put("comment_text", comment);
                 Log.d(TAG, "Sending params: " + params.toString());
@@ -505,15 +565,46 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         if (response.getString("status").equals("success")) {
                             JSONArray comments = response.getJSONArray("data");
-                            StringBuilder commentText = new StringBuilder();
+                            llCommentsContainer.removeAllViews(); // Clear previous comments
+
                             for (int i = 0; i < comments.length(); i++) {
                                 JSONObject comment = comments.getJSONObject(i);
-                                commentText.append(username).append(": ").append(comment.getString("comment_text"));
-                                if (i < comments.length() - 1) {
-                                    commentText.append("\n\n");
-                                }
+                                int commentId = comment.getInt("id");
+                                String commentText = username + ": " + comment.getString("comment_text");
+
+                                // Create a layout for each comment
+                                LinearLayout commentLayout = new LinearLayout(MainActivity.this);
+                                commentLayout.setLayoutParams(new LinearLayout.LayoutParams(
+                                        LinearLayout.LayoutParams.MATCH_PARENT,
+                                        LinearLayout.LayoutParams.WRAP_CONTENT));
+                                commentLayout.setOrientation(LinearLayout.HORIZONTAL);
+                                commentLayout.setPadding(0, 8, 0, 8);
+
+                                // Comment text
+                                TextView tvComment = new TextView(MainActivity.this);
+                                tvComment.setLayoutParams(new LinearLayout.LayoutParams(
+                                        0,
+                                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                                        3));
+                                tvComment.setText(commentText);
+                                tvComment.setTextColor(getResources().getColor(R.color.dark_gray));
+                                tvComment.setTextSize(14);
+                                tvComment.setTypeface(vazirRegular);
+                                commentLayout.addView(tvComment);
+
+                                // Report button for comment
+                                ImageView ivReportComment = new ImageView(MainActivity.this);
+                                ivReportComment.setLayoutParams(new LinearLayout.LayoutParams(
+                                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                                        LinearLayout.LayoutParams.WRAP_CONTENT));
+                                ivReportComment.setImageResource(R.drawable.ic_report);
+                                ivReportComment.setPadding(8, 0, 8, 0);
+                                ivReportComment.setContentDescription("گزارش تخلف کامنت");
+                                ivReportComment.setOnClickListener(v -> showReportDialog("comment", currentMemoryId, commentId));
+                                commentLayout.addView(ivReportComment);
+
+                                llCommentsContainer.addView(commentLayout);
                             }
-                            tvCommentsList.setText(commentText.toString());
                             Log.d(TAG, "Comments loaded: " + response.toString());
                         } else {
                             Toast.makeText(MainActivity.this, "Error: " + response.getString("message"), Toast.LENGTH_SHORT).show();

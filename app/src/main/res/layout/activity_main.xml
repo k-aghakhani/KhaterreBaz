@@ -9,7 +9,6 @@
 
     <!-- Header -->
     <TextView
-        android:layout_marginTop="5dp"
         android:id="@+id/tv_app_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -152,6 +151,22 @@
                         android:textSize="14sp"
                         android:layout_marginStart="4dp" />
                 </LinearLayout>
+
+                <!-- Report Memory Button -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:id="@+id/iv_report_memory"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_report"
+                        android:contentDescription="گزارش تخلف خاطره" />
+                </LinearLayout>
             </LinearLayout>
 
             <!-- Comment Input Section (Hidden by Default) -->
@@ -186,20 +201,29 @@
                 <!-- Comments List with Scroll -->
                 <ScrollView
                     android:layout_width="match_parent"
-                    android:layout_height="150dp"
+                    android:layout_height="200dp"
                     android:layout_marginTop="8dp">
 
-                    <TextView
-                        android:id="@+id/tv_comments_list"
+                    <LinearLayout
+                        android:id="@+id/ll_comments_container"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text=""
-                        android:textColor="@color/dark_gray"
-                        android:textSize="14sp"
-                        android:lineSpacingExtra="4dp"
+                        android:orientation="vertical"
                         android:divider="@android:color/darker_gray"
                         android:dividerHeight="0.5dp"
-                        android:showDividers="middle" />
+                        android:showDividers="middle">
+
+                        <!-- Comments will be dynamically added here -->
+                        <TextView
+                            android:id="@+id/tv_comments_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text=""
+                            android:textColor="@color/dark_gray"
+                            android:textSize="14sp"
+                            android:lineSpacingExtra="4dp" />
+
+                    </LinearLayout>
                 </ScrollView>
             </LinearLayout>
 
