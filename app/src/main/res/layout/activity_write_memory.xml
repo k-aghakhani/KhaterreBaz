@@ -1,10 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".WriteMemoryActivity">
+    android:background="@color/cream"
+    android:padding="16dp">
+
+    <!-- Header -->
+    <TextView
+        android:id="@+id/tv_write_memory_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="خاطره‌تو بنویس"
+        android:textColor="@color/persian_red"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Title Input -->
+    <EditText
+        android:id="@+id/et_memory_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="عنوان خاطره (مثلاً: یادش بخیر بازی لی‌لی)"
+        android:backgroundTint="@color/turquoise"
+        android:textColor="@color/dark_gray"
+        android:textSize="16sp"
+        android:padding="12dp"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@id/tv_write_memory_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.9" />
+
+    <!-- Description Input -->
+    <EditText
+        android:id="@+id/et_memory_description"
+        android:layout_width="0dp"
+        android:layout_height="150dp"
+        android:hint="توضیحات خاطره (مثلاً: اون روزا که با گچ خط می‌کشیدیم...)"
+        android:backgroundTint="@color/turquoise"
+        android:textColor="@color/dark_gray"
+        android:textSize="14sp"
+        android:padding="12dp"
+        android:gravity="top|start"
+        android:inputType="textMultiLine"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/et_memory_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.9" />
+
+    <!-- Submit Button -->
+    <Button
+        android:id="@+id/btn_submit_memory"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="ارسال خاطره"
+        android:backgroundTint="@color/turquoise"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@id/et_memory_description"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.9" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
