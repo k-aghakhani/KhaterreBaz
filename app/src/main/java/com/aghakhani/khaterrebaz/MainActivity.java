@@ -545,6 +545,7 @@ public class MainActivity extends AppCompatActivity {
                 params.put("user_id", userId);
                 params.put("memory_id", String.valueOf(currentMemoryId));
                 params.put("comment_text", comment);
+                params.put("username", username); // Send the username to the server
                 Log.d(TAG, "Sending params: " + params.toString());
                 return params;
             }
@@ -570,7 +571,8 @@ public class MainActivity extends AppCompatActivity {
                             for (int i = 0; i < comments.length(); i++) {
                                 JSONObject comment = comments.getJSONObject(i);
                                 int commentId = comment.getInt("id");
-                                String commentText = username + ": " + comment.getString("comment_text");
+                                String commentUsername = comment.getString("username"); // Get username from API response
+                                String commentText = commentUsername + ": " + comment.getString("comment_text");
 
                                 // Create a layout for each comment
                                 LinearLayout commentLayout = new LinearLayout(MainActivity.this);
