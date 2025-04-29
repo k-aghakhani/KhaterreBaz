@@ -46,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String PREFS_NAME = "KhaterreBazPrefs";
     private static final String KEY_USERNAME = "username";
     private static final String KEY_USER_ID = "user_id";
-    private static final String KEY_CSRF_TOKEN = "csrf_token";
 
     private RequestQueue queue;
     private int currentMemoryId;
@@ -62,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
     private String username;
     private String userId;
-    private String csrfToken; // Store CSRF token
     private LinearLayout llCommentsContainer;
 
     private Typeface vazirRegular;
@@ -90,7 +88,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         username = sharedPreferences.getString(KEY_USERNAME, null);
-        csrfToken = sharedPreferences.getString(KEY_CSRF_TOKEN, null);
 
         tvAppTitle = findViewById(R.id.tv_app_title);
         btnPreviousMemory = findViewById(R.id.btn_previous_memory);
@@ -127,9 +124,6 @@ public class MainActivity extends AppCompatActivity {
 
         queue = Volley.newRequestQueue(this);
         Picasso.get().setLoggingEnabled(true);
-
-        // Fetch CSRF token before making any POST requests
-        fetchCsrfToken();
 
         checkInternetConnection();
 
@@ -173,39 +167,6 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "لطفاً کامنت بنویسید!", Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    private void fetchCsrfToken() {
-        String url = API_URL + "?action=get_csrf_token";
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
-                response -> {
-                    try {
-                        if (response.getString("status").equals("success")) {
-                            csrfToken = response.getString("csrf_token");
-                            SharedPreferences.Editor editor = sharedPreferences.edit();
-                            editor.putString(KEY_CSRF_TOKEN, csrfToken);
-                            editor.apply();
-                            Log.d(TAG, "CSRF token fetched: " + csrfToken);
-                        } else {
-                            Toast.makeText(MainActivity.this, "Error fetching CSRF token: " + response.getString("message"), Toast.LENGTH_SHORT).show();
-                        }
-                    } catch (Exception e) {
-                        Toast.makeText(MainActivity.this, "Error parsing CSRF token response: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                        Log.e(TAG, "Parse error: " + e.getMessage(), e);
-                    }
-                },
-                error -> {
-                    Toast.makeText(MainActivity.this, "Network error fetching CSRF token: " + error.toString(), Toast.LENGTH_LONG).show();
-                    Log.e(TAG, "Network error: " + error.toString(), error);
-                });
-
-        request.setRetryPolicy(new DefaultRetryPolicy(
-                TIMEOUT_MS,
-                MAX_RETRIES,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-        ));
-
-        queue.add(request);
     }
 
     private void showUsernameDialog(String comment, EditText etComment, LinearLayout llCommentInput) {
@@ -334,13 +295,6 @@ public class MainActivity extends AppCompatActivity {
                 }
                 params.put("reason", reason);
                 return params;
-            }
-
-            @Override
-            public Map<String, String> getHeaders() {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("X-CSRF-Token", csrfToken);
-                return headers;
             }
         };
 
@@ -543,13 +497,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "Sending params: " + params.toString());
                 return params;
             }
-
-            @Override
-            public Map<String, String> getHeaders() {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("X-CSRF-Token", csrfToken);
-                return headers;
-            }
         };
 
         request.setRetryPolicy(new DefaultRetryPolicy(
@@ -601,13 +548,6 @@ public class MainActivity extends AppCompatActivity {
                 params.put("username", username); // Send the username to the server
                 Log.d(TAG, "Sending params: " + params.toString());
                 return params;
-            }
-
-            @Override
-            public Map<String, String> getHeaders() {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("X-CSRF-Token", csrfToken);
-                return headers;
             }
         };
 
