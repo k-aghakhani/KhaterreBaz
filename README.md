@@ -60,4 +60,7 @@ We welcome contributions to this project! You can:
 ## 📜 License
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-Thank you for using KhaterreBaz! We hope you enjoy revisiting your sweet memories with this app. ❤️
+Thank you for using KhaterreBaz! We hope you enjoy revisiting your sweet memories with this app. 
+
+Made with ❤️ and ☕
+
